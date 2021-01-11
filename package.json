@@ -92,5 +92,9 @@
     "providers": [
       "@adonisjs/bouncer"
     ]
+  },
+  "publishConfig": {
+  	"access": "public",
+  	"tag": "latest"
   }
 }
