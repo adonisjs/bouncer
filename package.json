@@ -6,7 +6,8 @@
   "files": [
     "build/adonis-typings",
     "build/providers",
-    "build/src"
+    "build/src",
+    "build/templates"
   ],
   "scripts": {
     "mrm": "mrm --preset=@adonisjs/mrm-preset",
