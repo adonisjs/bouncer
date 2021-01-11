@@ -16,7 +16,7 @@ import {
 } from '@ioc:Adonis/Addons/Bouncer'
 
 import { Bouncer } from '../Bouncer'
-import { UnauthorizedException } from '../Exceptions/UnauthorizedException'
+import { UnauthorizedException } from '../Exceptions/UnAuthorizedException'
 
 /**
  * Exposes the API to authorize actions
