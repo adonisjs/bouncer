@@ -96,5 +96,21 @@
   "publishConfig": {
     "access": "public",
     "tag": "latest"
-  }
+  },
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adonisjs/bouncer.git"
+  },
+  "keywords": [
+    "authorization",
+    "adonisjs"
+  ],
+  "bugs": {
+    "url": "https://github.com/adonisjs/bouncer/issues"
+  },
+  "homepage": "https://github.com/adonisjs/bouncer#readme"
 }
