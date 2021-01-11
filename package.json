@@ -1,6 +1,6 @@
 {
   "name": "@adonisjs/bouncer",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Authorization layer for AdonisJS",
   "main": "build/providers/BouncerProvider.js",
   "files": [
@@ -94,7 +94,7 @@
     ]
   },
   "publishConfig": {
-  	"access": "public",
-  	"tag": "latest"
+    "access": "public",
+    "tag": "latest"
   }
 }
