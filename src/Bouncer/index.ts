@@ -78,4 +78,11 @@ export class Bouncer implements BouncerContract<any> {
 	public forUser(user: any) {
 		return new ActionsAuthorizer(user, this)
 	}
+
+	/**
+	 * Deny authorization check using a custom message and status
+	 */
+	public deny(message: string, status?: number): [string, number] {
+		return [message, status || 403]
+	}
 }

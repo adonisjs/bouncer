@@ -177,6 +177,11 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 		 * Returns the authorizer instance for a given user
 		 */
 		forUser<User extends any>(user: User): ActionsAuthorizerContract<User>
+
+		/**
+		 * Deny authorization check using a custom message and status
+		 */
+		deny(message: string, status?: number): [string, number]
 	}
 
 	/**
