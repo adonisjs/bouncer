@@ -9,6 +9,7 @@
     "build/src",
     "build/templates"
   ],
+  "typings": "./build/adonis-typings/index.d.ts",
   "scripts": {
     "mrm": "mrm --preset=@adonisjs/mrm-preset",
     "pretest": "npm run lint",
@@ -88,7 +89,8 @@
           "dest": "bouncer"
         }
       ]
-    },
+		},
+		"preloads": ["./start/bouncer"],
     "types": "@adonisjs/bouncer",
     "providers": [
       "@adonisjs/bouncer"
