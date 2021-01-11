@@ -64,6 +64,16 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 	 * Run the action
 	 */
 	private async runAction(action: string, ...args: any[]) {
+		/**
+		 * Raise exception when the action is not defined. We should not silently
+		 * unauthorize requests when it is a programming error
+		 */
+		if (!this.bouncer.actions[action]) {
+			throw new Error(
+				`Cannot run "${action}" action. Make sure it is defined inside "start/bouncer" file`
+			)
+		}
+
 		const { handler, options } = this.bouncer.actions[action]
 		const allowGuest = options && options.allowGuest
 
