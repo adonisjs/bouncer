@@ -1,10 +1,10 @@
 <div align="center"><img src="https://res.cloudinary.com/adonisjs/image/upload/q_100/v1564392111/adonis-banner_o9lunk.png" width="600px"></div>
-# @adonisjs/bouncer
-> Tagline
+
+# AdonisJS bouncer
+
+> ⚠️ **The package is not ready yet. Please do not use it for now**
 
 [![circleci-image]][circleci-url] [![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
-
-A short brief
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
