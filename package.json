@@ -2,19 +2,20 @@
   "name": "@adonisjs/bouncer",
   "version": "0.0.0",
   "description": "Authorization layer for AdonisJS",
-  "main": "build/index.js",
+  "main": "build/providers/BouncerProvider.js",
   "files": [
-    "build/src",
-    "build/index.d.ts",
-    "build/index.js"
+    "build/adonis-typings",
+    "build/providers",
+    "build/src"
   ],
   "scripts": {
     "mrm": "mrm --preset=@adonisjs/mrm-preset",
     "pretest": "npm run lint",
     "test": "node japaFile.js",
     "clean": "del build",
+    "copyfiles": "copyfiles \"templates/**/*.txt\" build",
     "compile": "npm run lint && npm run clean && tsc",
-    "build": "npm run compile",
+    "build": "npm run compile && npm run copyfiles",
     "prepublishOnly": "npm run build",
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write .",
@@ -26,6 +27,8 @@
   "author": "virk,adonisjs",
   "license": "MIT",
   "devDependencies": {
+    "@adonisjs/auth": "^5.1.1",
+    "@adonisjs/core": "^5.0.4-preview-rc-2.1",
     "@adonisjs/mrm-preset": "^2.4.0",
     "@adonisjs/require-ts": "^1.1.1",
     "@types/node": "^14.14.20",
@@ -65,5 +68,28 @@
   "np": {
     "contents": ".",
     "anyBranch": false
-  }
+  },
+  "dependencies": {
+    "@poppinss/utils": "^2.5.9"
+  },
+  "adonisjs": {
+		"templates": {
+			"start": [
+				{
+					"src": "bouncer.txt",
+					"dest": "bouncer"
+				}
+			],
+			"contracts": [
+				{
+					"src": "contract.txt",
+					"dest": "bouncer"
+				}
+			]
+		},
+		"types": "@adonisjs/bouncer",
+		"providers": [
+			"@adonisjs/bouncer"
+		]
+	}
 }
