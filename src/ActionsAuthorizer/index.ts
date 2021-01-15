@@ -16,7 +16,7 @@ import {
 } from '@ioc:Adonis/Addons/Bouncer'
 
 import { Bouncer } from '../Bouncer'
-import { UnauthorizedException } from '../Exceptions/UnAuthorizedException'
+import { ForbiddenException } from '../Exceptions/ForbiddenException'
 
 /**
  * Exposes the API to authorize actions
@@ -174,7 +174,7 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 			return
 		}
 
-		throw UnauthorizedException.raise(errorResponse![0], errorResponse![1])
+		throw ForbiddenException.raise(errorResponse![0], errorResponse![1])
 	}
 
 	/**

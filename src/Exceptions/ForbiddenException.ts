@@ -9,7 +9,7 @@
 
 import { Exception } from '@poppinss/utils'
 
-export class UnauthorizedException extends Exception {
+export class ForbiddenException extends Exception {
 	public static raise(message?: string, status?: number) {
 		message = message || 'Unauthorized Access'
 		status = status || 403
