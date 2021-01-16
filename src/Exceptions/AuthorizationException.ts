@@ -9,10 +9,8 @@
 
 import { Exception } from '@poppinss/utils'
 
-export class UnauthorizedException extends Exception {
-	public static raise(message?: string, status?: number) {
-		message = message || 'Unauthorized Access'
-		status = status || 403
-		return new this(message, status, 'E_AUTHORIZED_ACCESS')
+export class AuthorizationException extends Exception {
+	public static raise(message: string, status: number) {
+		return new this(message, status, 'E_AUTHORIZATION_FAILURE')
 	}
 }

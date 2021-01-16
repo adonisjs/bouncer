@@ -68,7 +68,9 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 	/**
 	 * Use this type to define a custom type only action
 	 */
-	export type Action<Args extends any[]> = (...args: Args) => any
+	export type Action<Args extends any[]> = (
+		...args: Args
+	) => Promise<ActionResponse> | ActionResponse
 
 	/**
 	 * Shape of the action handler
@@ -124,7 +126,6 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 				options?: ActionOptions
 			}
 		}
-		// Policies extends any
 	> {
 		/**
 		 * Registered actions
@@ -161,17 +162,7 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 			action: Action,
 			handler: Handler,
 			options?: ActionOptions
-		): BouncerContract<
-			Actions & Record<Action, { handler: Handler; options: ActionOptions }>
-			// Policies
-		>
-
-		/**
-		 * Register policies
-		 */
-		// registerPolicies<Policies extends { [key: string]: () => DefaultExport<Newable> }>(
-		// 	policies: Policies
-		// ): BouncerContract<Actions, Policies>
+		): BouncerContract<Actions & Record<Action, { handler: Handler; options: ActionOptions }>>
 
 		/**
 		 * Returns the authorizer instance for a given user
@@ -179,7 +170,7 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 		forUser<User extends any>(user: User): ActionsAuthorizerContract<User>
 
 		/**
-		 * Deny authorization check using a custom message and status
+		 * Deny authorization check using a custom message and an optional status
 		 */
 		deny(message: string, status?: number): [string, number]
 	}
@@ -218,60 +209,13 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 			action: Action,
 			...args: GetActionRemainingArgs<ActionsList, Action>
 		): Promise<void>
-
-		/**
-		 * Get authorizer instance for a given policy
-		 */
-		// with<Policy extends keyof FilterPolicies<PoliciesList>>(
-		// 	policy: Policy
-		// ): PolicyAuthorizerContract<
-		// 	User,
-		// 	InstanceType<UnwrapPromise<ReturnType<PoliciesList[Policy]>>['default']>
-		// >
 	}
-
-	/**
-	 * Policy authorizer allows authorizing policy actions for a given user
-	 */
-	// export interface PolicyAuthorizerContract<User extends any, Actions extends any> {
-	// 	user: User
-
-	// 	/**
-	// 	 * Returns the authorizer instance for a given user
-	// 	 */
-	// 	forUser<User extends any>(user: User): PolicyAuthorizerContract<User, Actions>
-
-	// 	/**
-	// 	 * Find if user is allowed to perform the action on a given resource
-	// 	 */
-	// 	allows<Action extends ExtractActionsForUser<User, Actions>>(
-	// 		action: Action,
-	// 		...args: GetActionRemainingArgs<Actions, Action>
-	// 	): Promise<boolean>
-
-	// 	/**
-	// 	 * Find if user is not allowed to perform the action on a given resource
-	// 	 */
-	// 	denies<Action extends ExtractActionsForUser<User, Actions>>(
-	// 		action: Action,
-	// 		...args: GetActionRemainingArgs<Actions, Action>
-	// 	): Promise<boolean>
-
-	// 	/**
-	// 	 * Authorize user for a given resource + action
-	// 	 */
-	// 	authorize<Action extends ExtractActionsForUser<User, Actions>>(
-	// 		action: Action,
-	// 		...args: GetActionRemainingArgs<Actions, Action>
-	// 	): Promise<void>
-	// }
 
 	/**
 	 * The following interfaces are re-defined inside the user land to
 	 * have application wide
 	 */
 	export interface ActionsList {}
-	// export interface PoliciesList {}
 
 	const Bouncer: BouncerContract<{}>
 	export default Bouncer

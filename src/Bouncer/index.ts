@@ -65,7 +65,7 @@ export class Bouncer implements BouncerContract<any> {
 		options?: ActionOptions
 	): any {
 		if (typeof handler !== 'function') {
-			throw new Error(`Invalid handler for "${action}" action. Must be function`)
+			throw new Error(`Invalid handler for "${action}" action. Must be a function`)
 		}
 
 		this.actions[action] = { handler, options }

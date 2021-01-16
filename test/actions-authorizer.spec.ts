@@ -7,7 +7,13 @@
  */
 
 import test from 'japa'
+
+import { ApplicationContract } from '@ioc:Adonis/Core/Application'
+
 import { Bouncer } from '../src/Bouncer'
+import { setup, fs } from '../test-helpers'
+
+let app: ApplicationContract
 
 test.group('Actions Authorizer', () => {
 	test('return true if a user is allowed to perform an action', async (assert) => {
@@ -102,7 +108,7 @@ test.group('Actions Authorizer', () => {
 		try {
 			await authorizer.authorize('viewPost', new Post(2))
 		} catch (error) {
-			assert.equal(error.message, 'E_AUTHORIZED_ACCESS: Unauthorized Access')
+			assert.equal(error.message, 'E_AUTHORIZATION_FAILURE: Not authorized to perform this action')
 			assert.equal(error.status, 403)
 		}
 	})
@@ -132,7 +138,7 @@ test.group('Actions Authorizer', () => {
 		try {
 			await authorizer.authorize('viewPost', new Post(2))
 		} catch (error) {
-			assert.equal(error.message, 'E_AUTHORIZED_ACCESS: Cannot access post')
+			assert.equal(error.message, 'E_AUTHORIZATION_FAILURE: Cannot access post')
 			assert.equal(error.status, 403)
 		}
 	})
@@ -162,7 +168,7 @@ test.group('Actions Authorizer', () => {
 		try {
 			await authorizer.authorize('viewPost', new Post(2))
 		} catch (error) {
-			assert.equal(error.message, 'E_AUTHORIZED_ACCESS: Post not found')
+			assert.equal(error.message, 'E_AUTHORIZATION_FAILURE: Post not found')
 			assert.equal(error.status, 404)
 		}
 	})
@@ -218,6 +224,74 @@ test.group('Actions Authorizer', () => {
 		assert.equal(actionInvocationCounts, 1)
 	})
 
+	test('allow before hook to authorize non-existing actions', async (assert) => {
+		class User {
+			constructor(public id: number, public isSuperAdmin: boolean = false) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		const bouncer = new Bouncer()
+
+		bouncer.before(() => {
+			return true
+		})
+
+		const authorizer = bouncer.forUser(new User(1, true))
+		assert.isTrue(await authorizer.allows('viewPost', new Post(2)))
+		assert.isTrue(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
+	})
+
+	test('allow before hook to deny non-existing actions', async (assert) => {
+		class User {
+			constructor(public id: number, public isSuperAdmin: boolean = false) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		const bouncer = new Bouncer()
+
+		bouncer.before(() => {
+			return false
+		})
+
+		const authorizer = bouncer.forUser(new User(1, true))
+		assert.isFalse(await authorizer.allows('viewPost', new Post(2)))
+		assert.isFalse(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
+	})
+
+	test('raise exception when action is not defined', async (assert) => {
+		assert.plan(1)
+
+		class User {
+			constructor(public id: number, public isSuperAdmin: boolean = false) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		const bouncer = new Bouncer()
+
+		bouncer.before(() => {
+			return
+		})
+
+		const authorizer = bouncer.forUser(new User(1, true))
+		try {
+			await authorizer.allows('viewPost', new Post(2))
+		} catch (error) {
+			assert.equal(
+				error.message,
+				'Cannot run "viewPost" action. Make sure it is defined inside "start/bouncer" file'
+			)
+		}
+	})
+
 	test('authorize action from an after hook', async (assert) => {
 		let actionInvocationCounts = 0
 
@@ -233,7 +307,7 @@ test.group('Actions Authorizer', () => {
 
 		bouncer.after((user: User, _, result) => {
 			if (user.isSuperAdmin) {
-				assert.deepEqual(result.errorResponse, ['Unauthorized Access', 403])
+				assert.deepEqual(result.errorResponse, ['Not authorized to perform this action', 403])
 				return true
 			}
 		})
@@ -245,6 +319,62 @@ test.group('Actions Authorizer', () => {
 
 		const authorizer = bouncer.forUser(new User(1, true))
 		assert.isTrue(await authorizer.allows('viewPost', new Post(2)))
+		assert.isTrue(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
+		assert.equal(actionInvocationCounts, 2)
+	})
+
+	test('deny action from an after hook', async (assert) => {
+		let actionInvocationCounts = 0
+
+		class User {
+			constructor(public id: number, public isSuperAdmin: boolean = false) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		const bouncer = new Bouncer()
+
+		bouncer.after(() => {
+			return false
+		})
+
+		bouncer.define('viewPost', (user: User, post: Post) => {
+			actionInvocationCounts++
+			return user.id === post.userId
+		})
+
+		const authorizer = bouncer.forUser(new User(1, true))
+		assert.isFalse(await authorizer.allows('viewPost', new Post(2)))
+		assert.isFalse(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
+		assert.equal(actionInvocationCounts, 2)
+	})
+
+	test('forwaded action response as it is', async (assert) => {
+		let actionInvocationCounts = 0
+
+		class User {
+			constructor(public id: number, public isSuperAdmin: boolean = false) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		const bouncer = new Bouncer()
+
+		bouncer.after(() => {
+			return
+		})
+
+		bouncer.define('viewPost', (user: User, post: Post) => {
+			actionInvocationCounts++
+			return user.id === post.userId
+		})
+
+		const authorizer = bouncer.forUser(new User(1, true))
+		assert.isFalse(await authorizer.allows('viewPost', new Post(2)))
 		assert.isTrue(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
 		assert.equal(actionInvocationCounts, 2)
 	})
@@ -337,6 +467,35 @@ test.group('Actions Authorizer', () => {
 		assert.equal(actionInvocationCounts, 0)
 	})
 
+	test('do invoke before callback when user is missing', async (assert) => {
+		let actionInvocationCounts = 0
+		assert.plan(3)
+
+		class User {
+			constructor(public id: number) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		const bouncer = new Bouncer()
+
+		bouncer.before((user) => {
+			assert.isNull(user)
+		})
+
+		bouncer.define('viewPost', (user: User, post: Post) => {
+			actionInvocationCounts++
+			return user.id === post.userId
+		})
+
+		const authorizer = bouncer.forUser(null)
+
+		assert.isFalse(await authorizer.allows('viewPost', new Post(1)))
+		assert.equal(actionInvocationCounts, 0)
+	})
+
 	test('do attempt authorization when user is missing and guest is allowed', async (assert) => {
 		let actionInvocationCounts = 0
 
@@ -368,5 +527,269 @@ test.group('Actions Authorizer', () => {
 
 		assert.isTrue(await authorizer.allows('viewPost', new Post(1)))
 		assert.equal(actionInvocationCounts, 1)
+	})
+})
+
+test.group('Actions Authorizer | Profile', (group) => {
+	group.beforeEach(async () => {
+		app = await setup(false)
+	})
+
+	group.afterEach(async () => {
+		await fs.cleanup()
+	})
+
+	test('profile authorization calls', async (assert) => {
+		const profilePackets: any[] = []
+
+		class User {
+			constructor(public id: number) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		const bouncer = new Bouncer()
+		bouncer.define('viewPost', (user: User, post: Post) => {
+			return user.id === post.userId
+		})
+
+		const authorizer = bouncer.forUser(new User(1))
+		authorizer.setProfiler(app.profiler)
+
+		app.profiler.processor = function (packet) {
+			profilePackets.push(packet)
+		}
+
+		assert.isTrue(await authorizer.allows('viewPost', new Post(1)))
+
+		assert.lengthOf(profilePackets, 2)
+		assert.equal(profilePackets[0].label, 'bouncer:action')
+		assert.deepEqual(profilePackets[0].data, { action: 'viewPost', handler: 'anonymous' })
+		assert.deepEqual(profilePackets[0].parent_id, profilePackets[1].id)
+
+		assert.equal(profilePackets[1].label, 'bouncer:authorize')
+		assert.deepEqual(profilePackets[1].data, {
+			action: 'viewPost',
+			authorized: true,
+			errorResponse: null,
+		})
+	})
+
+	test('profile when action raises an exception', async (assert) => {
+		assert.plan(9)
+		const profilePackets: any[] = []
+
+		class User {
+			constructor(public id: number) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		const bouncer = new Bouncer()
+		bouncer.define('viewPost', () => {
+			throw new Error('bad request')
+		})
+
+		const authorizer = bouncer.forUser(new User(1))
+		authorizer.setProfiler(app.profiler)
+
+		app.profiler.processor = function (packet) {
+			profilePackets.push(packet)
+		}
+
+		try {
+			await authorizer.allows('viewPost', new Post(1))
+		} catch (error) {
+			assert.lengthOf(profilePackets, 2)
+			assert.equal(profilePackets[0].label, 'bouncer:action')
+			assert.equal(profilePackets[0].data.action, 'viewPost')
+			assert.equal(profilePackets[0].data.error.message, 'bad request')
+			assert.deepEqual(profilePackets[0].parent_id, profilePackets[1].id)
+
+			assert.equal(profilePackets[1].label, 'bouncer:authorize')
+			assert.equal(profilePackets[1].data.action, 'viewPost')
+			assert.isFalse(profilePackets[1].data.authorized)
+			assert.equal(profilePackets[1].data.error.message, 'bad request')
+		}
+	})
+
+	test('profile hooks', async (assert) => {
+		const profilePackets: any[] = []
+
+		class User {
+			constructor(public id: number) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		const bouncer = new Bouncer()
+		bouncer.before(() => {
+			return
+		})
+
+		bouncer.after(() => {
+			return
+		})
+
+		bouncer.define('viewPost', (user: User, post: Post) => {
+			return user.id === post.userId
+		})
+
+		const authorizer = bouncer.forUser(new User(1))
+		authorizer.setProfiler(app.profiler)
+
+		app.profiler.processor = function (packet) {
+			profilePackets.push(packet)
+		}
+
+		assert.isTrue(await authorizer.allows('viewPost', new Post(1)))
+
+		assert.lengthOf(profilePackets, 4)
+		assert.equal(profilePackets[0].label, 'bouncer:hook')
+		assert.deepEqual(profilePackets[0].data, {
+			action: 'viewPost',
+			handler: 'anonymous',
+			lifecycle: 'before',
+		})
+		assert.equal(profilePackets[0].parent_id, profilePackets[3].id)
+
+		assert.equal(profilePackets[1].label, 'bouncer:action')
+		assert.deepEqual(profilePackets[1].data, {
+			action: 'viewPost',
+			handler: 'anonymous',
+		})
+		assert.equal(profilePackets[1].parent_id, profilePackets[3].id)
+
+		assert.equal(profilePackets[2].label, 'bouncer:hook')
+		assert.deepEqual(profilePackets[2].data, {
+			action: 'viewPost',
+			handler: 'anonymous',
+			lifecycle: 'after',
+		})
+		assert.equal(profilePackets[2].parent_id, profilePackets[3].id)
+
+		assert.equal(profilePackets[3].label, 'bouncer:authorize')
+		assert.deepEqual(profilePackets[3].data, {
+			action: 'viewPost',
+			authorized: true,
+			errorResponse: null,
+		})
+	})
+
+	test('profile when before hook raises an exception', async (assert) => {
+		assert.plan(9)
+
+		const profilePackets: any[] = []
+
+		class User {
+			constructor(public id: number) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		const bouncer = new Bouncer()
+		bouncer.before(() => {
+			throw new Error('bad request')
+		})
+
+		bouncer.after(() => {
+			return
+		})
+
+		bouncer.define('viewPost', (user: User, post: Post) => {
+			return user.id === post.userId
+		})
+
+		const authorizer = bouncer.forUser(new User(1))
+		authorizer.setProfiler(app.profiler)
+
+		app.profiler.processor = function (packet) {
+			profilePackets.push(packet)
+		}
+
+		try {
+			await authorizer.allows('viewPost', new Post(1))
+		} catch (error) {
+			assert.lengthOf(profilePackets, 2)
+			assert.equal(profilePackets[0].label, 'bouncer:hook')
+			assert.equal(profilePackets[0].data.action, 'viewPost')
+			assert.equal(profilePackets[0].data.error.message, 'bad request')
+			assert.equal(profilePackets[0].parent_id, profilePackets[1].id)
+
+			assert.equal(profilePackets[1].label, 'bouncer:authorize')
+			assert.equal(profilePackets[1].data.action, 'viewPost')
+			assert.isFalse(profilePackets[1].data.authorized)
+			assert.equal(profilePackets[1].data.error.message, 'bad request')
+		}
+	})
+
+	test('profile when after hook raises an exception', async (assert) => {
+		assert.plan(15)
+
+		const profilePackets: any[] = []
+
+		class User {
+			constructor(public id: number) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		const bouncer = new Bouncer()
+		bouncer.before(() => {})
+
+		bouncer.after(() => {
+			throw new Error('bad request')
+		})
+
+		bouncer.define('viewPost', (user: User, post: Post) => {
+			return user.id === post.userId
+		})
+
+		const authorizer = bouncer.forUser(new User(1))
+		authorizer.setProfiler(app.profiler)
+
+		app.profiler.processor = function (packet) {
+			profilePackets.push(packet)
+		}
+
+		try {
+			await authorizer.allows('viewPost', new Post(1))
+		} catch (error) {
+			assert.lengthOf(profilePackets, 4)
+			assert.equal(profilePackets[0].label, 'bouncer:hook')
+			assert.deepEqual(profilePackets[0].data, {
+				action: 'viewPost',
+				handler: 'anonymous',
+				lifecycle: 'before',
+			})
+			assert.equal(profilePackets[0].parent_id, profilePackets[3].id)
+
+			assert.equal(profilePackets[1].label, 'bouncer:action')
+			assert.deepEqual(profilePackets[1].data, {
+				action: 'viewPost',
+				handler: 'anonymous',
+			})
+			assert.equal(profilePackets[1].parent_id, profilePackets[3].id)
+
+			assert.equal(profilePackets[2].label, 'bouncer:hook')
+			assert.equal(profilePackets[2].data.action, 'viewPost')
+			assert.equal(profilePackets[2].data.error.message, 'bad request')
+			assert.equal(profilePackets[2].parent_id, profilePackets[3].id)
+
+			assert.equal(profilePackets[3].label, 'bouncer:authorize')
+			assert.equal(profilePackets[3].data.action, 'viewPost')
+			assert.isFalse(profilePackets[3].data.authorized)
+			assert.equal(profilePackets[3].data.error.message, 'bad request')
+		}
 	})
 })
