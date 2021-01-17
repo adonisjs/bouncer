@@ -1,0 +1,10 @@
+import { BasePolicy } from '@ioc:Adonis/Addons/Bouncer'
+{{#imports}}
+{{{.}}}
+{{/imports}}
+
+export default {{ filename }} extends BasePolicy {
+	{{#actions}}
+	{{{.}}}
+	{{/actions}}
+}

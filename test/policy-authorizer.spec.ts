@@ -715,6 +715,7 @@ test.group('Actions Authorizer | Profile', (group) => {
 		assert.deepEqual(profilePackets[1].data, {
 			action: 'viewPost',
 			authorized: true,
+			policy: 'UserPolicy',
 			errorResponse: null,
 		})
 	})
@@ -833,6 +834,7 @@ test.group('Actions Authorizer | Profile', (group) => {
 		assert.equal(profilePackets[3].label, 'bouncer:authorize')
 		assert.deepEqual(profilePackets[3].data, {
 			action: 'viewPost',
+			policy: 'UserPolicy',
 			authorized: true,
 			errorResponse: null,
 		})
