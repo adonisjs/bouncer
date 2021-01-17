@@ -6,3 +6,7 @@ export const { actions } = Bouncer.define('update_user', async (user: User | Man
 }).define('view_user', async (user: User | null, isAdmin: boolean) => {
 	return isAdmin || !!user?.id
 })
+
+export const { policies } = Bouncer.registerPolicies({
+	UserPolicy: () => import('./UserPolicy'),
+})

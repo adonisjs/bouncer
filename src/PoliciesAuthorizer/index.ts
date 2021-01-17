@@ -10,28 +10,49 @@
 /// <reference path="../../adonis-typings/index.ts" />
 
 import { ProfilerContract, ProfilerRowContract } from '@ioc:Adonis/Core/Profiler'
-import { ActionsAuthorizerContract, AuthorizationResult } from '@ioc:Adonis/Addons/Bouncer'
+import {
+	PoliciesList,
+	BasePolicyContract,
+	AuthorizationResult,
+	PoliciesAuthorizerContract,
+	BasePolicyConstructorContract,
+} from '@ioc:Adonis/Addons/Bouncer'
 
 import { Bouncer } from '../Bouncer'
 import { AuthorizationProfiler } from '../Profiler'
-import { PoliciesAuthorizer } from '../PoliciesAuthorizer'
+import { normalizeActionResponse, normalizeHookResponse } from '../utils'
 import { AuthorizationException } from '../Exceptions/AuthorizationException'
-import { hookHasHandledTheRequest, normalizeActionResponse, normalizeHookResponse } from '../utils'
 
 /**
- * Exposes the API to authorize actions
+ * Exposes the API to authorize actions using a policy class
  */
-export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
+export class PoliciesAuthorizer implements PoliciesAuthorizerContract<any, keyof PoliciesList> {
 	/**
 	 * An optional profiler instance to profile the actions. Usually it will
 	 * be an instance of the current HTTP request profiler
 	 */
 	private profiler?: ProfilerRowContract | ProfilerContract
 
-	constructor(public user: any, private bouncer: Bouncer) {}
+	/**
+	 * The instance of the policy class. We need to resolve it only
+	 * once per authorizer instance
+	 */
+	private policyInstance: BasePolicyContract
+
+	constructor(public user: any, private bouncer: Bouncer, private policy: string) {}
 
 	/**
-	 * Run all hooks for a given lifecycle phase
+	 * Resolve policy
+	 */
+	private async resolvePolicy() {
+		if (this.policyInstance) {
+			return
+		}
+		this.policyInstance = await this.bouncer.resolvePolicy(this.policy)
+	}
+
+	/**
+	 * Run before/after hooks for a given lifecycle phase
 	 */
 	private async runHooks(
 		lifecycle: 'before' | 'after',
@@ -40,29 +61,16 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 		args: any[],
 		profiler: AuthorizationProfiler
 	): Promise<{ status: 'skipped' | 'authorized' | 'unauthorized' }> {
-		let response: any
-
-		for (let hook of this.bouncer.hooks[lifecycle]) {
-			/**
-			 * Execute hook
-			 */
-			response = await profiler.profileFunction(
-				'bouncer:hook',
-				{ lifecycle, action, handler: hook.name || 'anonymous' },
-				hook,
-				lifecycle === 'before'
-					? [this.user, action, ...args]
-					: [this.user, action, result!, ...args]
-			)
-
-			/**
-			 * Short circuit when response is not undefined or null. Meaning the
-			 * hook has decided to take over the request
-			 */
-			if (hookHasHandledTheRequest(response)) {
-				break
-			}
+		if (typeof this.policyInstance[lifecycle] !== 'function') {
+			return { status: 'skipped' as const }
 		}
+
+		const response = await profiler.profileFunction(
+			'bouncer:hook',
+			{ lifecycle, action, handler: lifecycle },
+			this.policyInstance[lifecycle].bind(this.policyInstance),
+			lifecycle === 'before' ? [this.user, action, ...args] : [this.user, action, result!, ...args]
+		)
 
 		return normalizeHookResponse(response)
 	}
@@ -71,16 +79,14 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 	 * Run the action
 	 */
 	private async runAction(action: string, args: any[], profiler: AuthorizationProfiler) {
-		/**
-		 * We should explicitly raise an exception when the action is not defined.
-		 */
-		if (!this.bouncer.actions[action]) {
+		if (typeof this.policyInstance[action] !== 'function') {
 			throw new Error(
-				`Cannot run "${action}" action. Make sure it is defined inside the "start/bouncer" file`
+				`Cannot run "${action}" action. Make sure it is defined on the "${this.policy}" class`
 			)
 		}
 
-		const { handler, options } = this.bouncer.actions[action]
+		const options = (this.policyInstance.constructor as BasePolicyConstructorContract)
+			.actionsOptions[action]
 		const allowGuest = options && options.allowGuest
 
 		/**
@@ -95,8 +101,8 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 		 */
 		const response = await profiler.profileFunction(
 			'bouncer:action',
-			{ action, handler: handler.name || 'anonymous' },
-			handler,
+			{ action, handler: action },
+			this.policyInstance[action].bind(this.policyInstance),
 			[this.user, ...args]
 		)
 
@@ -107,7 +113,10 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 	 * Run the authorization action
 	 */
 	private async authorizeAction(action: string, args: any[]) {
-		const profiler = new AuthorizationProfiler('bouncer:authorize', this.profiler, { action })
+		const profiler = new AuthorizationProfiler('bouncer:authorize', this.profiler, {
+			action,
+			policy: this.policy,
+		})
 
 		try {
 			/**
@@ -155,6 +164,7 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 	 * Find if a user is allowed to perform the action
 	 */
 	public async allows(action: string, ...args: any[]) {
+		await this.resolvePolicy()
 		const { authorized } = await this.authorizeAction(action, args)
 		return authorized === true
 	}
@@ -163,6 +173,7 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 	 * Find if a user is not allowed to perform the action
 	 */
 	public async denies(action: string, ...args: any[]) {
+		await this.resolvePolicy()
 		const { authorized } = await this.authorizeAction(action, args)
 		return authorized === false
 	}
@@ -171,6 +182,7 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 	 * Authorize user against the given action
 	 */
 	public async authorize(action: string, ...args: any[]) {
+		await this.resolvePolicy()
 		const { authorized, errorResponse } = await this.authorizeAction(action, args)
 
 		if (authorized) {
@@ -184,13 +196,6 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 	 * Create a new authorizer instance for a given user
 	 */
 	public forUser(user: any) {
-		return new ActionsAuthorizer(user, this.bouncer).setProfiler(this.profiler)
-	}
-
-	/**
-	 * Returns an instance of the policies authorizer
-	 */
-	public with(policy: string): any {
-		return new PoliciesAuthorizer(this.user, this.bouncer, policy).setProfiler(this.profiler)
+		return new PoliciesAuthorizer(user, this.bouncer, this.policy).setProfiler(this.profiler)
 	}
 }

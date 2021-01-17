@@ -12,10 +12,11 @@ import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 
 import { Bouncer } from '../src/Bouncer'
 import { setup, fs } from '../test-helpers'
+import { AuthorizationResult } from '@ioc:Adonis/Addons/Bouncer'
 
 let app: ApplicationContract
 
-test.group('Actions Authorizer', (group) => {
+test.group('Policy Authorizer', (group) => {
 	group.beforeEach(async () => {
 		app = await setup(false)
 	})
@@ -25,6 +26,7 @@ test.group('Actions Authorizer', (group) => {
 	})
 
 	test('return true if a user is allowed to perform an action', async (assert) => {
+		const bouncer = new Bouncer(app)
 		class User {
 			constructor(public id: number) {}
 		}
@@ -33,16 +35,26 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
-		assert.isTrue(await authorizer.allows('viewPost', new Post(1)))
+		assert.isTrue(await authorizer.with('UserPolicy').allows('viewPost', new Post(1)))
 	})
 
 	test('return false if a user is not allowed to perform an action', async (assert) => {
+		const bouncer = new Bouncer(app)
 		class User {
 			constructor(public id: number) {}
 		}
@@ -51,16 +63,26 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
-		assert.isFalse(await authorizer.allows('viewPost', new Post(2)))
+		assert.isFalse(await authorizer.with('UserPolicy').allows('viewPost', new Post(2)))
 	})
 
 	test('return true if a user is denied to perform an action', async (assert) => {
+		const bouncer = new Bouncer(app)
 		class User {
 			constructor(public id: number) {}
 		}
@@ -69,35 +91,56 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
-		assert.isTrue(await authorizer.denies('viewPost', new Post(2)))
+		assert.isTrue(await authorizer.with('UserPolicy').denies('viewPost', new Post(2)))
 	})
 
 	test('return false if a user is not denied to perform an action', async (assert) => {
+		const bouncer = new Bouncer(app)
 		class User {
 			constructor(public id: number) {}
 		}
+
 		class Post {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
-		assert.isFalse(await authorizer.denies('viewPost', new Post(1)))
+		assert.isFalse(await authorizer.with('UserPolicy').denies('viewPost', new Post(1)))
 	})
 
 	test('raise exception when a user is not allowed to perform an action', async (assert) => {
 		assert.plan(2)
 
+		const bouncer = new Bouncer(app)
 		class User {
 			constructor(public id: number) {}
 		}
@@ -106,15 +149,24 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
 
 		try {
-			await authorizer.authorize('viewPost', new Post(2))
+			await authorizer.with('UserPolicy').authorize('viewPost', new Post(2))
 		} catch (error) {
 			assert.equal(error.message, 'E_AUTHORIZATION_FAILURE: Not authorized to perform this action')
 			assert.equal(error.status, 403)
@@ -124,6 +176,7 @@ test.group('Actions Authorizer', (group) => {
 	test('allow custom denial message', async (assert) => {
 		assert.plan(2)
 
+		const bouncer = new Bouncer(app)
 		class User {
 			constructor(public id: number) {}
 		}
@@ -132,19 +185,27 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			if (user.id === post.userId) {
-				return true
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost(user: User, post: Post) {
+				if (user.id === post.userId) {
+					return true
+				}
+				return ['Cannot access post']
 			}
-			return ['Cannot access post']
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
 
 		try {
-			await authorizer.authorize('viewPost', new Post(2))
+			await authorizer.with('UserPolicy').authorize('viewPost', new Post(2))
 		} catch (error) {
 			assert.equal(error.message, 'E_AUTHORIZATION_FAILURE: Cannot access post')
 			assert.equal(error.status, 403)
@@ -154,6 +215,7 @@ test.group('Actions Authorizer', (group) => {
 	test('allow custom denial message with custom status code', async (assert) => {
 		assert.plan(2)
 
+		const bouncer = new Bouncer(app)
 		class User {
 			constructor(public id: number) {}
 		}
@@ -162,19 +224,27 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			if (user.id === post.userId) {
-				return true
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost(user: User, post: Post) {
+				if (user.id === post.userId) {
+					return true
+				}
+				return ['Post not found', 404]
 			}
-			return ['Post not found', 404]
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
 
 		try {
-			await authorizer.authorize('viewPost', new Post(2))
+			await authorizer.with('UserPolicy').authorize('viewPost', new Post(2))
 		} catch (error) {
 			assert.equal(error.message, 'E_AUTHORIZATION_FAILURE: Post not found')
 			assert.equal(error.status, 404)
@@ -182,6 +252,7 @@ test.group('Actions Authorizer', (group) => {
 	})
 
 	test('allow switching user at runtime', async (assert) => {
+		const bouncer = new Bouncer(app)
 		class User {
 			constructor(public id: number) {}
 		}
@@ -190,20 +261,34 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
 
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
 
-		assert.isFalse(await authorizer.allows('viewPost', new Post(2)))
-		assert.isTrue(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
+		assert.isFalse(await authorizer.with('UserPolicy').allows('viewPost', new Post(2)))
+		assert.isTrue(
+			await authorizer.forUser(new User(2)).with('UserPolicy').allows('viewPost', new Post(2))
+		)
+		assert.isTrue(
+			await authorizer.with('UserPolicy').forUser(new User(2)).allows('viewPost', new Post(2))
+		)
 	})
 
 	test('authorize action from a before hook', async (assert) => {
 		let actionInvocationCounts = 0
+		const bouncer = new Bouncer(app)
 
 		class User {
 			constructor(public id: number, public isSuperAdmin: boolean = false) {}
@@ -213,26 +298,38 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-
-		bouncer.before((user: User) => {
-			if (user.isSuperAdmin) {
-				return true
+		class UserPolicy extends bouncer.BasePolicy {
+			public before(user: User) {
+				if (user.isSuperAdmin) {
+					return true
+				}
 			}
-		})
 
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			actionInvocationCounts++
-			return user.id === post.userId
+			public viewPost(user: User, post: Post) {
+				actionInvocationCounts++
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1, true))
-		assert.isTrue(await authorizer.allows('viewPost', new Post(2)))
-		assert.isTrue(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
+		assert.isTrue(await authorizer.with('UserPolicy').allows('viewPost', new Post(2)))
+		assert.isTrue(
+			await authorizer.with('UserPolicy').forUser(new User(2)).allows('viewPost', new Post(2))
+		)
 		assert.equal(actionInvocationCounts, 1)
 	})
 
 	test('allow before hook to authorize non-existing actions', async (assert) => {
+		const bouncer = new Bouncer(app)
+
 		class User {
 			constructor(public id: number, public isSuperAdmin: boolean = false) {}
 		}
@@ -241,18 +338,30 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
+		class UserPolicy extends bouncer.BasePolicy {
+			public before() {
+				return true
+			}
+		}
 
-		bouncer.before(() => {
-			return true
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1, true))
-		assert.isTrue(await authorizer.allows('viewPost', new Post(2)))
-		assert.isTrue(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
+		assert.isTrue(await authorizer.with('UserPolicy').allows('viewPost', new Post(2)))
+		assert.isTrue(
+			await authorizer.with('UserPolicy').forUser(new User(2)).allows('viewPost', new Post(2))
+		)
 	})
 
 	test('allow before hook to deny non-existing actions', async (assert) => {
+		const bouncer = new Bouncer(app)
+
 		class User {
 			constructor(public id: number, public isSuperAdmin: boolean = false) {}
 		}
@@ -261,19 +370,30 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
+		class UserPolicy extends bouncer.BasePolicy {
+			public before() {
+				return false
+			}
+		}
 
-		bouncer.before(() => {
-			return false
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1, true))
-		assert.isFalse(await authorizer.allows('viewPost', new Post(2)))
-		assert.isFalse(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
+		assert.isFalse(await authorizer.with('UserPolicy').allows('viewPost', new Post(2)))
+		assert.isFalse(
+			await authorizer.with('UserPolicy').forUser(new User(2)).allows('viewPost', new Post(2))
+		)
 	})
 
 	test('raise exception when action is not defined', async (assert) => {
 		assert.plan(1)
+		const bouncer = new Bouncer(app)
 
 		class User {
 			constructor(public id: number, public isSuperAdmin: boolean = false) {}
@@ -283,25 +403,32 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
+		class UserPolicy extends bouncer.BasePolicy {
+			public before() {}
+		}
 
-		bouncer.before(() => {
-			return
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1, true))
 		try {
-			await authorizer.allows('viewPost', new Post(2))
+			await authorizer.with('UserPolicy').allows('viewPost', new Post(2))
 		} catch (error) {
 			assert.equal(
 				error.message,
-				'Cannot run "viewPost" action. Make sure it is defined inside the "start/bouncer" file'
+				'Cannot run "viewPost" action. Make sure it is defined on the "UserPolicy" class'
 			)
 		}
 	})
 
 	test('authorize action from an after hook', async (assert) => {
 		let actionInvocationCounts = 0
+		const bouncer = new Bouncer(app)
 
 		class User {
 			constructor(public id: number, public isSuperAdmin: boolean = false) {}
@@ -311,28 +438,39 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-
-		bouncer.after((user: User, _, result) => {
-			if (user.isSuperAdmin) {
-				assert.deepEqual(result.errorResponse, ['Not authorized to perform this action', 403])
-				return true
+		class UserPolicy extends bouncer.BasePolicy {
+			public after(user: User, _: string, result: AuthorizationResult) {
+				if (user.isSuperAdmin) {
+					assert.deepEqual(result.errorResponse, ['Not authorized to perform this action', 403])
+					return true
+				}
 			}
-		})
 
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			actionInvocationCounts++
-			return user.id === post.userId
+			public viewPost(user: User, post: Post) {
+				actionInvocationCounts++
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1, true))
-		assert.isTrue(await authorizer.allows('viewPost', new Post(2)))
-		assert.isTrue(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
+		assert.isTrue(await authorizer.with('UserPolicy').allows('viewPost', new Post(2)))
+		assert.isTrue(
+			await authorizer.forUser(new User(2)).with('UserPolicy').allows('viewPost', new Post(2))
+		)
 		assert.equal(actionInvocationCounts, 2)
 	})
 
 	test('deny action from an after hook', async (assert) => {
 		let actionInvocationCounts = 0
+		const bouncer = new Bouncer(app)
 
 		class User {
 			constructor(public id: number, public isSuperAdmin: boolean = false) {}
@@ -342,184 +480,163 @@ test.group('Actions Authorizer', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-
-		bouncer.after(() => {
-			return false
-		})
-
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			actionInvocationCounts++
-			return user.id === post.userId
-		})
-
-		const authorizer = bouncer.forUser(new User(1, true))
-		assert.isFalse(await authorizer.allows('viewPost', new Post(2)))
-		assert.isFalse(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
-		assert.equal(actionInvocationCounts, 2)
-	})
-
-	test('forwaded action response as it is', async (assert) => {
-		let actionInvocationCounts = 0
-
-		class User {
-			constructor(public id: number, public isSuperAdmin: boolean = false) {}
-		}
-
-		class Post {
-			constructor(public userId: number) {}
-		}
-
-		const bouncer = new Bouncer(app)
-
-		bouncer.after(() => {
-			return
-		})
-
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			actionInvocationCounts++
-			return user.id === post.userId
-		})
-
-		const authorizer = bouncer.forUser(new User(1, true))
-		assert.isFalse(await authorizer.allows('viewPost', new Post(2)))
-		assert.isTrue(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
-		assert.equal(actionInvocationCounts, 2)
-	})
-
-	test('run the action callback when hooks skips the authorization', async (assert) => {
-		let hooksInvocationCounts = 0
-
-		class User {
-			constructor(public id: number, public isSuperAdmin: boolean = false) {}
-		}
-
-		class Post {
-			constructor(public userId: number) {}
-		}
-
-		const bouncer = new Bouncer(app)
-
-		bouncer.before(() => {
-			hooksInvocationCounts++
-		})
-		bouncer.before(() => {
-			hooksInvocationCounts++
-		})
-
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
-		})
-
-		const authorizer = bouncer.forUser(new User(1, true))
-		assert.isFalse(await authorizer.allows('viewPost', new Post(2)))
-		assert.isTrue(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
-		assert.equal(hooksInvocationCounts, 4)
-	})
-
-	test('do not run the next hook when first one authorizes the action', async (assert) => {
-		let hooksInvocationCounts = 0
-
-		class User {
-			constructor(public id: number, public isSuperAdmin: boolean = false) {}
-		}
-
-		class Post {
-			constructor(public userId: number) {}
-		}
-
-		const bouncer = new Bouncer(app)
-
-		bouncer.before((user: User) => {
-			hooksInvocationCounts++
-			if (user.isSuperAdmin) {
-				return true
+		class UserPolicy extends bouncer.BasePolicy {
+			public after() {
+				return false
 			}
-		})
 
-		bouncer.before(() => {
-			hooksInvocationCounts++
-		})
+			public viewPost(user: User, post: Post) {
+				actionInvocationCounts++
+				return user.id === post.userId
+			}
+		}
 
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1, true))
-		assert.isTrue(await authorizer.allows('viewPost', new Post(2)))
-		assert.isTrue(await authorizer.forUser(new User(2)).allows('viewPost', new Post(2)))
-		assert.equal(hooksInvocationCounts, 3)
+		assert.isFalse(await authorizer.with('UserPolicy').allows('viewPost', new Post(2)))
+		assert.isFalse(
+			await authorizer.forUser(new User(2)).with('UserPolicy').allows('viewPost', new Post(2))
+		)
+		assert.equal(actionInvocationCounts, 2)
+	})
+
+	test('forwaded action response from after hook as it is', async (assert) => {
+		let actionInvocationCounts = 0
+		const bouncer = new Bouncer(app)
+
+		class User {
+			constructor(public id: number, public isSuperAdmin: boolean = false) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		class UserPolicy extends bouncer.BasePolicy {
+			public after() {}
+
+			public viewPost(user: User, post: Post) {
+				actionInvocationCounts++
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
+		})
+
+		const authorizer = bouncer.forUser(new User(1, true))
+		assert.isFalse(await authorizer.with('UserPolicy').allows('viewPost', new Post(2)))
+		assert.isTrue(
+			await authorizer.forUser(new User(2)).with('UserPolicy').allows('viewPost', new Post(2))
+		)
+		assert.equal(actionInvocationCounts, 2)
 	})
 
 	test('do not attempt authorization when user is missing', async (assert) => {
 		let actionInvocationCounts = 0
+		const bouncer = new Bouncer(app)
 
 		class User {
-			constructor(public id: number) {}
+			constructor(public id: number, public isSuperAdmin: boolean = false) {}
 		}
 
 		class Post {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
+		class UserPolicy extends bouncer.BasePolicy {
+			public after() {}
 
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			actionInvocationCounts++
-			return user.id === post.userId
+			public viewPost(user: User, post: Post) {
+				actionInvocationCounts++
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(null)
 
-		assert.isFalse(await authorizer.allows('viewPost', new Post(1)))
+		assert.isFalse(await authorizer.with('UserPolicy').allows('viewPost', new Post(1)))
 		assert.equal(actionInvocationCounts, 0)
 	})
 
-	test('do invoke before callback when user is missing', async (assert) => {
+	test('do invoke "before" hook when user is missing', async (assert) => {
 		let actionInvocationCounts = 0
 		assert.plan(3)
 
+		const bouncer = new Bouncer(app)
+
 		class User {
-			constructor(public id: number) {}
+			constructor(public id: number, public isSuperAdmin: boolean = false) {}
 		}
 
 		class Post {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
+		class UserPolicy extends bouncer.BasePolicy {
+			public before(user: User) {
+				assert.isNull(user)
+			}
 
-		bouncer.before((user) => {
-			assert.isNull(user)
-		})
+			public viewPost(user: User, post: Post) {
+				actionInvocationCounts++
+				return user.id === post.userId
+			}
+		}
 
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			actionInvocationCounts++
-			return user.id === post.userId
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(null)
 
-		assert.isFalse(await authorizer.allows('viewPost', new Post(1)))
+		assert.isFalse(await authorizer.with('UserPolicy').allows('viewPost', new Post(1)))
 		assert.equal(actionInvocationCounts, 0)
 	})
 
 	test('do attempt authorization when user is missing and guest is allowed', async (assert) => {
 		let actionInvocationCounts = 0
 
+		const bouncer = new Bouncer(app)
+
 		class User {
-			constructor(public id: number) {}
+			constructor(public id: number, public isSuperAdmin: boolean = false) {}
 		}
 
 		class Post {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
+		class UserPolicy extends bouncer.BasePolicy {
+			public before(user: User) {
+				assert.isNull(user)
+			}
 
-		bouncer.define(
-			'viewPost',
-			(user: User | null, post: Post) => {
+			public viewPost(user: User, post: Post) {
 				actionInvocationCounts++
 
 				if (!user) {
@@ -527,13 +644,21 @@ test.group('Actions Authorizer', (group) => {
 				}
 
 				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+		UserPolicy.storeActionOptions('viewPost', { allowGuest: true })
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
 			},
-			{ allowGuest: true }
-		)
+		})
 
 		const authorizer = bouncer.forUser(null)
 
-		assert.isTrue(await authorizer.allows('viewPost', new Post(1)))
+		assert.isTrue(await authorizer.with('UserPolicy').allows('viewPost', new Post(1)))
 		assert.equal(actionInvocationCounts, 1)
 	})
 })
@@ -549,6 +674,7 @@ test.group('Actions Authorizer | Profile', (group) => {
 
 	test('profile authorization calls', async (assert) => {
 		const profilePackets: any[] = []
+		const bouncer = new Bouncer(app)
 
 		class User {
 			constructor(public id: number) {}
@@ -558,9 +684,17 @@ test.group('Actions Authorizer | Profile', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
@@ -570,11 +704,11 @@ test.group('Actions Authorizer | Profile', (group) => {
 			profilePackets.push(packet)
 		}
 
-		assert.isTrue(await authorizer.allows('viewPost', new Post(1)))
+		assert.isTrue(await authorizer.with('UserPolicy').allows('viewPost', new Post(1)))
 
 		assert.lengthOf(profilePackets, 2)
 		assert.equal(profilePackets[0].label, 'bouncer:action')
-		assert.deepEqual(profilePackets[0].data, { action: 'viewPost', handler: 'anonymous' })
+		assert.deepEqual(profilePackets[0].data, { action: 'viewPost', handler: 'viewPost' })
 		assert.deepEqual(profilePackets[0].parent_id, profilePackets[1].id)
 
 		assert.equal(profilePackets[1].label, 'bouncer:authorize')
@@ -588,6 +722,7 @@ test.group('Actions Authorizer | Profile', (group) => {
 	test('profile when action raises an exception', async (assert) => {
 		assert.plan(9)
 		const profilePackets: any[] = []
+		const bouncer = new Bouncer(app)
 
 		class User {
 			constructor(public id: number) {}
@@ -597,9 +732,18 @@ test.group('Actions Authorizer | Profile', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-		bouncer.define('viewPost', () => {
-			throw new Error('bad request')
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost() {
+				throw new Error('bad request')
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
@@ -610,7 +754,7 @@ test.group('Actions Authorizer | Profile', (group) => {
 		}
 
 		try {
-			await authorizer.allows('viewPost', new Post(1))
+			await authorizer.with('UserPolicy').allows('viewPost', new Post(1))
 		} catch (error) {
 			assert.lengthOf(profilePackets, 2)
 			assert.equal(profilePackets[0].label, 'bouncer:action')
@@ -627,6 +771,7 @@ test.group('Actions Authorizer | Profile', (group) => {
 
 	test('profile hooks', async (assert) => {
 		const profilePackets: any[] = []
+		const bouncer = new Bouncer(app)
 
 		class User {
 			constructor(public id: number) {}
@@ -636,17 +781,20 @@ test.group('Actions Authorizer | Profile', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-		bouncer.before(() => {
-			return
-		})
+		class UserPolicy extends bouncer.BasePolicy {
+			public before() {}
+			public after() {}
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
 
-		bouncer.after(() => {
-			return
-		})
+		UserPolicy.boot()
 
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
@@ -656,13 +804,13 @@ test.group('Actions Authorizer | Profile', (group) => {
 			profilePackets.push(packet)
 		}
 
-		assert.isTrue(await authorizer.allows('viewPost', new Post(1)))
+		assert.isTrue(await authorizer.with('UserPolicy').allows('viewPost', new Post(1)))
 
 		assert.lengthOf(profilePackets, 4)
 		assert.equal(profilePackets[0].label, 'bouncer:hook')
 		assert.deepEqual(profilePackets[0].data, {
 			action: 'viewPost',
-			handler: 'anonymous',
+			handler: 'before',
 			lifecycle: 'before',
 		})
 		assert.equal(profilePackets[0].parent_id, profilePackets[3].id)
@@ -670,14 +818,14 @@ test.group('Actions Authorizer | Profile', (group) => {
 		assert.equal(profilePackets[1].label, 'bouncer:action')
 		assert.deepEqual(profilePackets[1].data, {
 			action: 'viewPost',
-			handler: 'anonymous',
+			handler: 'viewPost',
 		})
 		assert.equal(profilePackets[1].parent_id, profilePackets[3].id)
 
 		assert.equal(profilePackets[2].label, 'bouncer:hook')
 		assert.deepEqual(profilePackets[2].data, {
 			action: 'viewPost',
-			handler: 'anonymous',
+			handler: 'after',
 			lifecycle: 'after',
 		})
 		assert.equal(profilePackets[2].parent_id, profilePackets[3].id)
@@ -692,6 +840,7 @@ test.group('Actions Authorizer | Profile', (group) => {
 
 	test('profile when before hook raises an exception', async (assert) => {
 		assert.plan(9)
+		const bouncer = new Bouncer(app)
 
 		const profilePackets: any[] = []
 
@@ -703,17 +852,22 @@ test.group('Actions Authorizer | Profile', (group) => {
 			constructor(public userId: number) {}
 		}
 
-		const bouncer = new Bouncer(app)
-		bouncer.before(() => {
-			throw new Error('bad request')
-		})
+		class UserPolicy extends bouncer.BasePolicy {
+			public before() {
+				throw new Error('bad request')
+			}
 
-		bouncer.after(() => {
-			return
-		})
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
 
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
@@ -724,7 +878,7 @@ test.group('Actions Authorizer | Profile', (group) => {
 		}
 
 		try {
-			await authorizer.allows('viewPost', new Post(1))
+			await authorizer.with('UserPolicy').allows('viewPost', new Post(1))
 		} catch (error) {
 			assert.lengthOf(profilePackets, 2)
 			assert.equal(profilePackets[0].label, 'bouncer:hook')
@@ -753,14 +907,24 @@ test.group('Actions Authorizer | Profile', (group) => {
 		}
 
 		const bouncer = new Bouncer(app)
-		bouncer.before(() => {})
+		class UserPolicy extends bouncer.BasePolicy {
+			public before() {}
 
-		bouncer.after(() => {
-			throw new Error('bad request')
-		})
+			public after() {
+				throw new Error('bad request')
+			}
 
-		bouncer.define('viewPost', (user: User, post: Post) => {
-			return user.id === post.userId
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
 		})
 
 		const authorizer = bouncer.forUser(new User(1))
@@ -771,13 +935,13 @@ test.group('Actions Authorizer | Profile', (group) => {
 		}
 
 		try {
-			await authorizer.allows('viewPost', new Post(1))
+			await authorizer.with('UserPolicy').allows('viewPost', new Post(1))
 		} catch (error) {
 			assert.lengthOf(profilePackets, 4)
 			assert.equal(profilePackets[0].label, 'bouncer:hook')
 			assert.deepEqual(profilePackets[0].data, {
 				action: 'viewPost',
-				handler: 'anonymous',
+				handler: 'before',
 				lifecycle: 'before',
 			})
 			assert.equal(profilePackets[0].parent_id, profilePackets[3].id)
@@ -785,7 +949,7 @@ test.group('Actions Authorizer | Profile', (group) => {
 			assert.equal(profilePackets[1].label, 'bouncer:action')
 			assert.deepEqual(profilePackets[1].data, {
 				action: 'viewPost',
-				handler: 'anonymous',
+				handler: 'viewPost',
 			})
 			assert.equal(profilePackets[1].parent_id, profilePackets[3].id)
 

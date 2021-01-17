@@ -9,8 +9,8 @@
 
 import test from 'japa'
 import { Bouncer } from '../src/Bouncer'
-import { ActionsAuthorizer } from '../src/ActionsAuthorizer'
 import { setup, fs } from '../test-helpers'
+import { ActionsAuthorizer } from '../src/ActionsAuthorizer'
 
 test.group('Setup provider', (group) => {
 	group.afterEach(async () => {

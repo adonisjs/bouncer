@@ -19,7 +19,7 @@ export default class BouncerServiceProvider {
 	public register() {
 		this.app.container.singleton('Adonis/Addons/Bouncer', () => {
 			const { Bouncer } = require('../src/Bouncer')
-			return new Bouncer()
+			return new Bouncer(this.app)
 		})
 	}
 

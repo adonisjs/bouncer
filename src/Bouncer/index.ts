@@ -9,19 +9,34 @@
 
 /// <reference path="../../adonis-typings/index.ts" />
 
+import { BasePolicyContract } from '@ioc:Adonis/Addons/Bouncer'
+
 import {
+	LazyPolicy,
 	ActionOptions,
 	ActionHandler,
 	BouncerContract,
 	AfterHookHandler,
 	BeforeHookHandler,
+	BasePolicyConstructorContract,
 } from '@ioc:Adonis/Addons/Bouncer'
+
+import { BasePolicy } from '../BasePolicy'
 import { ActionsAuthorizer } from '../ActionsAuthorizer'
+import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 
 /**
  * Bouncer exposes the API for registering authorization actions and policies
  */
-export class Bouncer implements BouncerContract<any> {
+export class Bouncer implements BouncerContract<any, any> {
+	/**
+	 * A set of resolved policies. This is to avoid re-importing the same
+	 * policies again and again
+	 */
+	private resolvedPolicies: {
+		[key: string]: BasePolicyConstructorContract
+	} = {}
+
 	/**
 	 * Set of registered actions
 	 */
@@ -33,12 +48,24 @@ export class Bouncer implements BouncerContract<any> {
 	} = {}
 
 	/**
+	 * Set of registered policies
+	 */
+	public policies: { [key: string]: LazyPolicy } = {}
+
+	/**
 	 * Set of registered hooks
 	 */
-	public hooks: BouncerContract<any>['hooks'] = {
+	public hooks: BouncerContract<any, any>['hooks'] = {
 		before: [],
 		after: [],
 	}
+
+	/**
+	 * Reference to the base policy
+	 */
+	public BasePolicy = BasePolicy
+
+	constructor(private application: ApplicationContract) {}
 
 	/**
 	 * Register a before hook
@@ -73,6 +100,22 @@ export class Bouncer implements BouncerContract<any> {
 	}
 
 	/**
+	 * Register policies
+	 */
+	public registerPolicies(policies: { [key: string]: LazyPolicy }): any {
+		Object.keys(policies).forEach((policy) => {
+			if (typeof policies[policy] !== 'function') {
+				throw new Error(
+					`Invalid value for "${policy}" policy. Must be a function importing the policy class`
+				)
+			}
+		})
+
+		this.policies = policies
+		return this
+	}
+
+	/**
 	 * Returns the authorizer for a given user
 	 */
 	public forUser(user: any) {
@@ -84,5 +127,39 @@ export class Bouncer implements BouncerContract<any> {
 	 */
 	public deny(message: string, status?: number): [string, number] {
 		return [message, status || 403]
+	}
+
+	/**
+	 * Resolve policy from the set of pre-registered policies
+	 */
+	public async resolvePolicy(policy: string): Promise<BasePolicyContract> {
+		/**
+		 * Return pre-resolved policy
+		 */
+		if (this.resolvedPolicies[policy]) {
+			return this.application.container.make(this.resolvedPolicies[policy])
+		}
+
+		/**
+		 * Ensure policy is registered
+		 */
+		if (typeof this.policies[policy] !== 'function') {
+			throw new Error(
+				`Cannot use "${policy}" policy. Make sure it is defined as a function inside "start/bouncer" file`
+			)
+		}
+
+		const policyExport = await this.policies[policy]()
+
+		/**
+		 * Ensure policy has a default export
+		 */
+		if (!policyExport || !policyExport.default) {
+			throw new Error(
+				`Invalid "${policy}" policy. Make sure to export default the policy implementation`
+			)
+		}
+
+		return this.application.container.make(policyExport.default)
 	}
 }
