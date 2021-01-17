@@ -160,6 +160,7 @@ export class Bouncer implements BouncerContract<any, any> {
 			)
 		}
 
+		policyExport.default.boot()
 		return this.application.container.make(policyExport.default)
 	}
 }

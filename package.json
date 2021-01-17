@@ -6,7 +6,8 @@
   "files": [
     "build/adonis-typings",
     "build/providers",
-    "build/src",
+		"build/src",
+		"build/commands",
     "build/templates"
   ],
   "typings": "./build/adonis-typings/index.d.ts",
