@@ -1,13 +1,13 @@
 {
   "name": "@adonisjs/bouncer",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Authorization layer for AdonisJS",
   "main": "build/providers/BouncerProvider.js",
   "files": [
     "build/adonis-typings",
     "build/providers",
-		"build/src",
-		"build/commands",
+    "build/src",
+    "build/commands",
     "build/templates"
   ],
   "typings": "./build/adonis-typings/index.d.ts",
