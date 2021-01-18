@@ -7,6 +7,7 @@
  * file that was distributed with this source code.
  */
 
+import { access } from 'fs'
 import { join } from 'path'
 import camelcase from 'camelcase'
 import { BaseCommand, flags, args } from '@adonisjs/core/build/standalone'
@@ -93,6 +94,21 @@ export default class MakePolicyCommand extends BaseCommand {
 	}
 
 	/**
+	 * Find if a file exists
+	 */
+	private pathExists(filePath: string) {
+		return new Promise((resolve) => {
+			access(filePath, (error) => {
+				if (error) {
+					resolve(false)
+				} else {
+					resolve(true)
+				}
+			})
+		})
+	}
+
+	/**
 	 * Run the command
 	 */
 	public async run() {
@@ -141,8 +157,9 @@ export default class MakePolicyCommand extends BaseCommand {
 
 		const stub = join(__dirname, '..', 'templates', 'policy.txt')
 		const path = this.application.resolveNamespaceDirectory('policies')
+		const policiesNamespace = this.application.rcFile.namespaces.policies || 'App/Policies'
 
-		this.generator
+		const file = this.generator
 			.addFile(this.name, { pattern: 'pascalcase', suffix: 'Policy' })
 			.stub(stub)
 			.destinationDir(path || 'app/Policies')
@@ -159,7 +176,25 @@ export default class MakePolicyCommand extends BaseCommand {
 				imports,
 			})
 			.appRoot(this.application.cliCwd || this.application.appRoot)
+			.toJSON()
 
+		const fileExists = await this.pathExists(file.filepath)
 		await this.generator.run()
+
+		if (!fileExists) {
+			this.ui
+				.instructions()
+				.heading('Register Policy')
+				.add(`Open ${this.colors.cyan('start/bouncer.ts')} file`)
+				.add(`Navigate to ${this.colors.cyan('bouncer.registerPolicies')} function call`)
+				.add(
+					`Add ${this.colors
+						.cyan()
+						.underline(
+							`${file.filename}: () => import('${policiesNamespace}/${file.filename}')`
+						)} to the object`
+				)
+				.render()
+		}
 	}
 }
