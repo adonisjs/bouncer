@@ -46,7 +46,7 @@ test.group('Make Policy', (group) => {
 		assert.deepEqual(PostPolicy.split('\n'), [
 			`import { BasePolicy } from '@ioc:Adonis/Addons/Bouncer'`,
 			'',
-			'export default PostPolicy extends BasePolicy {',
+			'export default class PostPolicy extends BasePolicy {',
 			'}',
 			'',
 		])
@@ -73,7 +73,7 @@ test.group('Make Policy', (group) => {
 			`import User from 'App/Models/User'`,
 			`import Post from 'App/Models/Post'`,
 			'',
-			'export default PostPolicy extends BasePolicy {',
+			'export default class PostPolicy extends BasePolicy {',
 			'	public async create(user: User) {}',
 			'	public async update(user: User, post: Post) {}',
 			'}',
@@ -100,7 +100,7 @@ test.group('Make Policy', (group) => {
 		assert.deepEqual(PostPolicy.split('\n'), [
 			`import { BasePolicy } from '@ioc:Adonis/Addons/Bouncer'`,
 			'',
-			'export default PostPolicy extends BasePolicy {',
+			'export default class PostPolicy extends BasePolicy {',
 			'}',
 			'',
 		])
@@ -127,7 +127,7 @@ test.group('Make Policy', (group) => {
 			`import User from 'App/Models/User'`,
 			`import Post from 'App/Models/Post'`,
 			'',
-			'export default PostPolicy extends BasePolicy {',
+			'export default class PostPolicy extends BasePolicy {',
 			'	public async create(user: User) {}',
 			'	public async update(user: User, post: Post) {}',
 			'}',
@@ -166,7 +166,7 @@ test.group('Make Policy', (group) => {
 			`import User from 'App/Models/User'`,
 			`import Post from 'App/Models/Post'`,
 			'',
-			'export default PostPolicy extends BasePolicy {',
+			'export default class PostPolicy extends BasePolicy {',
 			'	public async create(user: User) {}',
 			'	public async update(user: User, post: Post) {}',
 			'}',
@@ -205,7 +205,7 @@ test.group('Make Policy', (group) => {
 			`import User from 'App/Domains/Models/User'`,
 			`import Post from 'App/Domains/Models/Post'`,
 			'',
-			'export default PostPolicy extends BasePolicy {',
+			'export default class PostPolicy extends BasePolicy {',
 			'	public async create(user: User) {}',
 			'	public async update(user: User, post: Post) {}',
 			'}',
