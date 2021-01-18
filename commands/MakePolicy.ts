@@ -100,7 +100,7 @@ export default class MakePolicyCommand extends BaseCommand {
 		 * Prompt for actions when actions are not defined, but resourceModel is
 		 * defined
 		 */
-		if (this.resourceModel && !this.actions) {
+		if (this.resourceModel && (!this.actions || !this.actions.length)) {
 			this.actions = await this.prompt.multiple('Select the actions you want to authorize', [
 				'None',
 				'viewList',
