@@ -75,7 +75,7 @@
     "anyBranch": false
   },
   "dependencies": {
-    "@poppinss/utils": "^2.5.9",
+    "@poppinss/utils": "^2.5.10",
     "camelcase": "^6.2.0"
   },
   "adonisjs": {
