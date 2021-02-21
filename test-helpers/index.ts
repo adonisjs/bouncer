@@ -30,10 +30,10 @@ export async function setup(setupProviders?: boolean) {
 	`
 	)
 
-	application.setup()
+	await application.setup()
 
 	if (setupProviders) {
-		application.registerProviders()
+		await application.registerProviders()
 		await application.bootProviders()
 	}
 

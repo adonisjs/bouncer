@@ -137,7 +137,7 @@ export class Bouncer implements BouncerContract<any, any> {
 		 * Return pre-resolved policy
 		 */
 		if (this.resolvedPolicies[policy]) {
-			return this.application.container.make(this.resolvedPolicies[policy])
+			return this.application.container.makeAsync(this.resolvedPolicies[policy])
 		}
 
 		/**
@@ -161,6 +161,6 @@ export class Bouncer implements BouncerContract<any, any> {
 		}
 
 		policyExport.default.boot()
-		return this.application.container.make(policyExport.default)
+		return this.application.container.makeAsync(policyExport.default)
 	}
 }

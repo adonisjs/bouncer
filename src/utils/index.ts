@@ -68,7 +68,7 @@ export function normalizeActionResponse(response: any): AuthorizationResult {
 /**
  * Profile a function call
  */
-export async function profileFunction<Fn extends (...args: any[]) => any>(
+export async function profileFunction<Fn extends (...Args: any[]) => any>(
 	actionName: string,
 	data: any,
 	fn: Fn,

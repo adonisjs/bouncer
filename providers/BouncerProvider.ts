@@ -27,13 +27,13 @@ export default class BouncerServiceProvider {
 	 * Hook into the http context to provide an authorizer instance
 	 */
 	public boot() {
-		this.app.container.with(
+		this.app.container.withBindings(
 			['Adonis/Core/HttpContext', 'Adonis/Addons/Bouncer'],
 			(HttpContext, Bouncer) => {
 				HttpContext.getter(
 					'bouncer',
-					function () {
-						return Bouncer.forUser(this.auth ? this.auth.user : null)
+					function bouncer() {
+						return Bouncer.forUser(this.auth ? this.auth.user : null) as any
 					},
 					true
 				)

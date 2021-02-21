@@ -189,12 +189,12 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 		/**
 		 * Define an action and its handler
 		 */
-		define<Action extends string, Handler extends ActionHandler>(
-			action: Action,
+		define<ActionName extends string, Handler extends ActionHandler>(
+			action: ActionName,
 			handler: Handler,
 			options?: ActionOptions
 		): BouncerContract<
-			Actions & Record<Action, { handler: Handler; options: ActionOptions }>,
+			Actions & Record<ActionName, { handler: Handler; options: ActionOptions }>,
 			Policies
 		>
 
@@ -219,8 +219,8 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 	/**
 	 * Authorizer allows authorizing actions for a given user
 	 */
-	export interface ActionsAuthorizerContract<User extends any> {
-		user: User
+	export interface ActionsAuthorizerContract<ActionsUser extends any> {
+		user: ActionsUser
 
 		/**
 		 * Set the profiler to be used for profiling the function calls
@@ -235,25 +235,25 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 		/**
 		 * Find if user is allowed to perform the action on a given resource
 		 */
-		allows<Action extends ExtractActionsForUser<User, ActionsList>>(
-			action: Action,
-			...args: GetActionRemainingArgs<ActionsList, Action>
+		allows<ActionName extends ExtractActionsForUser<ActionsUser, ActionsList>>(
+			action: ActionName,
+			...args: GetActionRemainingArgs<ActionsList, ActionName>
 		): Promise<boolean>
 
 		/**
 		 * Find if user is not allowed to perform the action on a given resource
 		 */
-		denies<Action extends ExtractActionsForUser<User, ActionsList>>(
-			action: Action,
-			...args: GetActionRemainingArgs<ActionsList, Action>
+		denies<ActionName extends ExtractActionsForUser<ActionsUser, ActionsList>>(
+			action: ActionName,
+			...args: GetActionRemainingArgs<ActionsList, ActionName>
 		): Promise<boolean>
 
 		/**
 		 * Authorize user for a given resource + action
 		 */
-		authorize<Action extends ExtractActionsForUser<User, ActionsList>>(
-			action: Action,
-			...args: GetActionRemainingArgs<ActionsList, Action>
+		authorize<ActionName extends ExtractActionsForUser<ActionsUser, ActionsList>>(
+			action: ActionName,
+			...args: GetActionRemainingArgs<ActionsList, ActionName>
 		): Promise<void>
 
 		/**
@@ -261,14 +261,17 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 		 */
 		with<Policy extends keyof PoliciesList>(
 			policy: Policy
-		): PoliciesAuthorizerContract<User, Policy>
+		): PoliciesAuthorizerContract<ActionsUser, Policy>
 	}
 
 	/**
 	 * Authorizer allows authorizing actions for a given user
 	 */
-	export interface PoliciesAuthorizerContract<User extends any, Policy extends keyof PoliciesList> {
-		user: User
+	export interface PoliciesAuthorizerContract<
+		PolicyUser extends any,
+		Policy extends keyof PoliciesList
+	> {
+		user: PolicyUser
 
 		/**
 		 * Set the profiler to be used for profiling function calls
@@ -283,25 +286,25 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 		/**
 		 * Find if user is allowed to perform the action on a given resource
 		 */
-		allows<Action extends ExtractActionsForUser<User, PoliciesList[Policy]>>(
-			action: Action,
-			...args: GetActionRemainingArgs<PoliciesList[Policy], Action>
+		allows<PolicyAction extends ExtractActionsForUser<PolicyUser, PoliciesList[Policy]>>(
+			action: PolicyAction,
+			...args: GetActionRemainingArgs<PoliciesList[Policy], PolicyAction>
 		): Promise<boolean>
 
 		/**
 		 * Find if user is not allowed to perform the action on a given resource
 		 */
-		denies<Action extends ExtractActionsForUser<User, PoliciesList[Policy]>>(
-			action: Action,
-			...args: GetActionRemainingArgs<PoliciesList[Policy], Action>
+		denies<PolicyAction extends ExtractActionsForUser<PolicyUser, PoliciesList[Policy]>>(
+			action: PolicyAction,
+			...args: GetActionRemainingArgs<PoliciesList[Policy], PolicyAction>
 		): Promise<boolean>
 
 		/**
 		 * Authorize user for a given resource + action
 		 */
-		authorize<Action extends ExtractActionsForUser<User, PoliciesList[Policy]>>(
-			action: Action,
-			...args: GetActionRemainingArgs<PoliciesList[Policy], Action>
+		authorize<PolicyAction extends ExtractActionsForUser<PolicyUser, PoliciesList[Policy]>>(
+			action: PolicyAction,
+			...args: GetActionRemainingArgs<PoliciesList[Policy], PolicyAction>
 		): Promise<void>
 	}
 
