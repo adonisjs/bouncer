@@ -1,22 +1,44 @@
-<div align="center"><img src="https://res.cloudinary.com/adonisjs/image/upload/q_100/v1564392111/adonis-banner_o9lunk.png" width="600px"></div>
+<div align="center">
+  <img src="https://res.cloudinary.com/adonisjs/image/upload/q_100/v1558612869/adonis-readme_zscycu.jpg" width="600px">
+</div>
 
-# AdonisJS bouncer
+<br />
 
-> ⚠️ **The package is not ready yet. Please do not use it for now**
+<div align="center">
+  <h3>Bouncer</h3>
+  <p>Authorization package to authorize user actions using policies</p>
+</div>
 
-[![circleci-image]][circleci-url] [![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+<br />
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<div align="center">
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+[![circleci-image]][circleci-url] [![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url] [![synk-image]][synk-url]
 
-## Purpose
+</div>
 
-## Features
+<div align="center">
+  <h3>
+    <a href="https://preview.adonisjs.com">
+      Website
+    </a>
+    <span> | </span>
+    <a href="https://preview.adonisjs.com/guides/authorization/introduction">
+      Guides
+    </a>
+    <span> | </span>
+    <a href="CONTRIBUTING.md">
+      Contributing
+    </a>
+  </h3>
+</div>
 
-[circleci-image]: https://img.shields.io/circleci/project/github/null/null/master.svg?style=for-the-badge&logo=circleci
-[circleci-url]: https://circleci.com/gh/null/null "circleci"
+<div align="center">
+  <sub>Built with ❤︎ by <a href="https://twitter.com/AmanVirk1">Harminder Virk</a>
+</div>
+
+[circleci-image]: https://img.shields.io/circleci/project/github/adonisjs/bouncer/master.svg?style=for-the-badge&logo=circleci
+[circleci-url]: https://circleci.com/gh/adonisjs/bouncer "circleci"
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]:  "typescript"
@@ -26,3 +48,6 @@
 
 [license-image]: https://img.shields.io/npm/l/@adonisjs/bouncer?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
+
+[synk-image]: https://img.shields.io/snyk/vulnerabilities/github/adonisjs/bouncer?label=Synk%20Vulnerabilities&style=for-the-badge
+[synk-url]: https://snyk.io/test/github/adonisjs/bouncer?targetFile=package.json "synk"
