@@ -37,6 +37,7 @@ export class BasePolicy implements BasePolicyContract {
 			return
 		}
 
+		this.booted = true
 		defineStaticProperty(this, BasePolicy, {
 			propertyName: 'actionsOptions',
 			defaultValue: {},
@@ -47,7 +48,7 @@ export class BasePolicy implements BasePolicyContract {
 	/**
 	 * Store action actions. This is usually invoked via a decarator
 	 */
-	public static storeActionOptions(propertyName: string, options: ActionOptions) {
+	public static storeActionOptions(propertyName: any, options: ActionOptions) {
 		this.actionsOptions[propertyName] = options
 		return this
 	}

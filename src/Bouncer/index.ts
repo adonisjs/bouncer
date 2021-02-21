@@ -21,6 +21,7 @@ import {
 	BasePolicyConstructorContract,
 } from '@ioc:Adonis/Addons/Bouncer'
 
+import { action } from '../Decorators'
 import { BasePolicy } from '../BasePolicy'
 import { ActionsAuthorizer } from '../ActionsAuthorizer'
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
@@ -64,6 +65,7 @@ export class Bouncer implements BouncerContract<any, any> {
 	 * Reference to the base policy
 	 */
 	public BasePolicy = BasePolicy
+	public action = action
 
 	constructor(private application: ApplicationContract) {}
 
@@ -87,15 +89,15 @@ export class Bouncer implements BouncerContract<any, any> {
 	 * Define an authorization action
 	 */
 	public define<Action extends string>(
-		action: Action,
+		actionName: Action,
 		handler: ActionHandler,
 		options?: ActionOptions
 	): any {
 		if (typeof handler !== 'function') {
-			throw new Error(`Invalid handler for "${action}" action. Must be a function`)
+			throw new Error(`Invalid handler for "${actionName}" action. Must be a function`)
 		}
 
-		this.actions[action] = { handler, options }
+		this.actions[actionName] = { handler, options }
 		return this
 	}
 

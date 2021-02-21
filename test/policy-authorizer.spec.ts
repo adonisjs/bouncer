@@ -13,6 +13,7 @@ import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import { Bouncer } from '../src/Bouncer'
 import { setup, fs } from '../test-helpers'
 import { AuthorizationResult } from '@ioc:Adonis/Addons/Bouncer'
+import { BasePolicy } from '@ioc:Adonis/Addons/Bouncer'
 
 let app: ApplicationContract
 
@@ -649,6 +650,48 @@ test.group('Policy Authorizer', (group) => {
 
 		UserPolicy.boot()
 		UserPolicy.storeActionOptions('viewPost', { allowGuest: true })
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
+		})
+
+		const authorizer = bouncer.forUser(null)
+
+		assert.isTrue(await authorizer.with('UserPolicy').allows('viewPost', new Post(1)))
+		assert.equal(actionInvocationCounts, 1)
+	})
+
+	test('allow guest via decorator', async (assert) => {
+		let actionInvocationCounts = 0
+
+		const bouncer = new Bouncer(app)
+
+		class User {
+			constructor(public id: number, public isSuperAdmin: boolean = false) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		class UserPolicy extends bouncer.BasePolicy {
+			public before(user: User) {
+				assert.isNull(user)
+			}
+
+			@bouncer.action({ allowGuest: true })
+			public viewPost(user: User, post: Post) {
+				actionInvocationCounts++
+
+				if (!user) {
+					return true
+				}
+
+				return user.id === post.userId
+			}
+		}
 
 		bouncer.registerPolicies({
 			UserPolicy: async () => {

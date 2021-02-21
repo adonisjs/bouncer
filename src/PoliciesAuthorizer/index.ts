@@ -85,8 +85,8 @@ export class PoliciesAuthorizer implements PoliciesAuthorizerContract<any, keyof
 			)
 		}
 
-		const options = (this.policyInstance.constructor as BasePolicyConstructorContract)
-			.actionsOptions[action]
+		const Policy = this.policyInstance.constructor as BasePolicyConstructorContract
+		const options = Policy.actionsOptions[action]
 		const allowGuest = options && options.allowGuest
 
 		/**

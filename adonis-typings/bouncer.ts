@@ -143,7 +143,11 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 		/**
 		 * Store options for a given policy action
 		 */
-		storeActionOptions(propertyName: keyof InstanceType<this>, options?: ActionOptions): this
+		storeActionOptions<T extends BasePolicyConstructorContract>(
+			this: T,
+			propertyName: keyof InstanceType<T>,
+			options?: ActionOptions
+		): this
 	}
 
 	/**
@@ -315,7 +319,24 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 	export interface ActionsList {}
 	export interface PoliciesList {}
 
+	/**
+	 * Typed decorator
+	 */
+	export type TypedDecorator<PropType> = <
+		TKey extends string,
+		TTarget extends { [K in TKey]: PropType }
+	>(
+		target: TTarget,
+		property: TKey
+	) => void
+
+	/**
+	 * Shape of the action decorator
+	 */
+	export type ActionDecorator = (options: Partial<ActionOptions>) => TypedDecorator<Action<any>>
+
 	const Bouncer: BouncerContract<{}, {}>
 	export const BasePolicy: BasePolicyConstructorContract
+	export const action: ActionDecorator
 	export default Bouncer
 }
