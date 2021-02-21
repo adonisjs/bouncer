@@ -8,9 +8,9 @@
  */
 
 declare module '@ioc:Adonis/Core/HttpContext' {
-	import { ActionsAuthorizerContract } from '@ioc:Adonis/Addons/Bouncer'
+  import { ActionsAuthorizerContract } from '@ioc:Adonis/Addons/Bouncer'
 
-	interface HttpContextContract {
-		bouncer: ActionsAuthorizerContract<Exclude<HttpContextContract['auth']['user'], undefined>>
-	}
+  interface HttpContextContract {
+    bouncer: ActionsAuthorizerContract<Exclude<HttpContextContract['auth']['user'], undefined>>
+  }
 }

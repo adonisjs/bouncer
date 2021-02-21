@@ -14,13 +14,13 @@ import { Application } from '@adonisjs/core/build/standalone'
 export const fs = new Filesystem(join(__dirname, '__app'))
 
 export async function setup(setupProviders?: boolean) {
-	const application = new Application(fs.basePath, 'web', {
-		providers: ['@adonisjs/core', '@adonisjs/view', '../../providers/BouncerProvider'],
-	})
+  const application = new Application(fs.basePath, 'web', {
+    providers: ['@adonisjs/core', '@adonisjs/view', '../../providers/BouncerProvider'],
+  })
 
-	await fs.add(
-		'config/app.ts',
-		`
+  await fs.add(
+    'config/app.ts',
+    `
 		export const profiler = { enabled: true }
 		export const appKey = 'averylongrandomsecretkey'
 		export const http = {
@@ -28,14 +28,14 @@ export async function setup(setupProviders?: boolean) {
 			cookie: {}
 		}
 	`
-	)
+  )
 
-	await application.setup()
+  await application.setup()
 
-	if (setupProviders) {
-		await application.registerProviders()
-		await application.bootProviders()
-	}
+  if (setupProviders) {
+    await application.registerProviders()
+    await application.bootProviders()
+  }
 
-	return application
+  return application
 }

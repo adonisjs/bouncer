@@ -8,9 +8,9 @@
  */
 
 declare module '@ioc:Adonis/Core/Application' {
-	import Bouncer from '@ioc:Adonis/Addons/Bouncer'
+  import Bouncer from '@ioc:Adonis/Addons/Bouncer'
 
-	export interface ContainerBindings {
-		'Adonis/Addons/Bouncer': typeof Bouncer
-	}
+  export interface ContainerBindings {
+    'Adonis/Addons/Bouncer': typeof Bouncer
+  }
 }

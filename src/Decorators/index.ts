@@ -10,9 +10,9 @@
 import { ActionDecorator, BasePolicyConstructorContract } from '@ioc:Adonis/Addons/Bouncer'
 
 export const action: ActionDecorator = (options) => {
-	return function decorateAsColumn(target, property) {
-		const Policy = target.constructor as BasePolicyConstructorContract
-		Policy.boot()
-		Policy.storeActionOptions<any>(property, options)
-	}
+  return function decorateAsColumn(target, property) {
+    const Policy = target.constructor as BasePolicyConstructorContract
+    Policy.boot()
+    Policy.storeActionOptions<any>(property, options)
+  }
 }

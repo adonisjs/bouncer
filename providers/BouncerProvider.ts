@@ -10,44 +10,44 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 
 export default class BouncerServiceProvider {
-	constructor(protected app: ApplicationContract) {}
-	public static needsApplication = true
+  constructor(protected app: ApplicationContract) {}
+  public static needsApplication = true
 
-	/**
-	 * Register bouncer to the container
-	 */
-	public register() {
-		this.app.container.singleton('Adonis/Addons/Bouncer', () => {
-			const { Bouncer } = require('../src/Bouncer')
-			return new Bouncer(this.app)
-		})
-	}
+  /**
+   * Register bouncer to the container
+   */
+  public register() {
+    this.app.container.singleton('Adonis/Addons/Bouncer', () => {
+      const { Bouncer } = require('../src/Bouncer')
+      return new Bouncer(this.app)
+    })
+  }
 
-	/**
-	 * Hook into the http context to provide an authorizer instance
-	 */
-	public boot() {
-		this.app.container.withBindings(
-			['Adonis/Core/HttpContext', 'Adonis/Addons/Bouncer'],
-			(HttpContext, Bouncer) => {
-				HttpContext.getter(
-					'bouncer',
-					function bouncer() {
-						return Bouncer.forUser(this.auth ? this.auth.user : null) as any
-					},
-					true
-				)
-			}
-		)
+  /**
+   * Hook into the http context to provide an authorizer instance
+   */
+  public boot() {
+    this.app.container.withBindings(
+      ['Adonis/Core/HttpContext', 'Adonis/Addons/Bouncer'],
+      (HttpContext, Bouncer) => {
+        HttpContext.getter(
+          'bouncer',
+          function bouncer() {
+            return Bouncer.forUser(this.auth ? this.auth.user : null) as any
+          },
+          true
+        )
+      }
+    )
 
-		this.app.container.withBindings(['Adonis/Core/Server', 'Adonis/Core/View'], (Server, View) => {
-			const { CanTag, CannotTag } = require('../src/Bindings/View')
-			View.registerTag(CanTag)
-			View.registerTag(CannotTag)
+    this.app.container.withBindings(['Adonis/Core/Server', 'Adonis/Core/View'], (Server, View) => {
+      const { CanTag, CannotTag } = require('../src/Bindings/View')
+      View.registerTag(CanTag)
+      View.registerTag(CannotTag)
 
-			Server.hooks.before(async (ctx) => {
-				ctx.view.share({ bouncer: ctx.bouncer })
-			})
-		})
-	}
+      Server.hooks.before(async (ctx) => {
+        ctx.view.share({ bouncer: ctx.bouncer })
+      })
+    })
+  }
 }

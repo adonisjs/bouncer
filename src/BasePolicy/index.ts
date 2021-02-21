@@ -16,40 +16,40 @@ import { ActionOptions, BasePolicyContract } from '@ioc:Adonis/Addons/Bouncer'
  * Every policy must extend the base policy
  */
 export class BasePolicy implements BasePolicyContract {
-	public static booted: boolean
-	public static actionsOptions: { [key: string]: ActionOptions }
+  public static booted: boolean
+  public static actionsOptions: { [key: string]: ActionOptions }
 
-	/**
-	 * Boot the policy
-	 */
-	public static boot() {
-		/**
-		 * Define the property when not defined on self
-		 */
-		if (!this.hasOwnProperty('booted')) {
-			this.booted = false
-		}
+  /**
+   * Boot the policy
+   */
+  public static boot() {
+    /**
+     * Define the property when not defined on self
+     */
+    if (!this.hasOwnProperty('booted')) {
+      this.booted = false
+    }
 
-		/**
-		 * Return when already booted
-		 */
-		if (this.booted === true) {
-			return
-		}
+    /**
+     * Return when already booted
+     */
+    if (this.booted === true) {
+      return
+    }
 
-		this.booted = true
-		defineStaticProperty(this, BasePolicy, {
-			propertyName: 'actionsOptions',
-			defaultValue: {},
-			strategy: 'inherit',
-		})
-	}
+    this.booted = true
+    defineStaticProperty(this, BasePolicy, {
+      propertyName: 'actionsOptions',
+      defaultValue: {},
+      strategy: 'inherit',
+    })
+  }
 
-	/**
-	 * Store action actions. This is usually invoked via a decarator
-	 */
-	public static storeActionOptions(propertyName: any, options: ActionOptions) {
-		this.actionsOptions[propertyName] = options
-		return this
-	}
+  /**
+   * Store action actions. This is usually invoked via a decarator
+   */
+  public static storeActionOptions(propertyName: any, options: ActionOptions) {
+    this.actionsOptions[propertyName] = options
+    return this
+  }
 }
