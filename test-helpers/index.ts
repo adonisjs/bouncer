@@ -15,7 +15,7 @@ export const fs = new Filesystem(join(__dirname, '__app'))
 
 export async function setup(setupProviders?: boolean) {
 	const application = new Application(fs.basePath, 'web', {
-		providers: ['@adonisjs/core', '../../providers/BouncerProvider'],
+		providers: ['@adonisjs/core', '@adonisjs/view', '../../providers/BouncerProvider'],
 	})
 
 	await fs.add(

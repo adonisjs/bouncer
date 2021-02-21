@@ -13,7 +13,6 @@ import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import { Bouncer } from '../src/Bouncer'
 import { setup, fs } from '../test-helpers'
 import { AuthorizationResult } from '@ioc:Adonis/Addons/Bouncer'
-import { BasePolicy } from '@ioc:Adonis/Addons/Bouncer'
 
 let app: ApplicationContract
 
@@ -703,6 +702,72 @@ test.group('Policy Authorizer', (group) => {
 
 		assert.isTrue(await authorizer.with('UserPolicy').allows('viewPost', new Post(1)))
 		assert.equal(actionInvocationCounts, 1)
+	})
+
+	test('authorize using the can/cannot method', async (assert) => {
+		const bouncer = new Bouncer(app)
+		class User {
+			constructor(public id: number) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
+		})
+
+		const authorizer = bouncer.forUser(new User(1))
+		assert.isTrue(await authorizer.can('UserPolicy.viewPost', new Post(1)))
+		assert.isFalse(await authorizer.cannot('UserPolicy.viewPost', new Post(1)))
+	})
+
+	test('raise exception when using invalid policy name via can/cannot method', async (assert) => {
+		assert.plan(1)
+
+		const bouncer = new Bouncer(app)
+		class User {
+			constructor(public id: number) {}
+		}
+
+		class Post {
+			constructor(public userId: number) {}
+		}
+
+		class UserPolicy extends bouncer.BasePolicy {
+			public viewPost(user: User, post: Post) {
+				return user.id === post.userId
+			}
+		}
+
+		UserPolicy.boot()
+
+		bouncer.registerPolicies({
+			UserPolicy: async () => {
+				return { default: UserPolicy }
+			},
+		})
+
+		const authorizer = bouncer.forUser(new User(1))
+		try {
+			await authorizer.can('UPolicy.viewPost', new Post(1))
+		} catch ({ message }) {
+			assert.equal(
+				message,
+				'Cannot use "UPolicy" policy. Make sure it is defined as a function inside "start/bouncer" file'
+			)
+		}
 	})
 })
 

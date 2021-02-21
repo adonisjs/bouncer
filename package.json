@@ -34,6 +34,7 @@
     "@adonisjs/core": "^5.0.5-canary-rc-2",
     "@adonisjs/mrm-preset": "^3.0.0",
     "@adonisjs/require-ts": "^2.0.2",
+    "@adonisjs/view": "^4.0.0",
     "@poppinss/dev-utils": "^1.1.0",
     "@types/node": "^14.14.31",
     "commitizen": "^4.2.3",
@@ -50,6 +51,7 @@
     "mrm": "^2.5.19",
     "np": "^7.4.0",
     "prettier": "^2.2.1",
+    "ts-dedent": "^2.0.0",
     "typescript": "^4.1.5"
   },
   "husky": {
@@ -77,15 +79,19 @@
   "dependencies": {
     "@poppinss/utils": "^3.0.3"
   },
-	"peerDependencies": {
+  "peerDependencies": {
     "@adonisjs/auth": "^6.0.0",
+    "@adonisjs/view": "^4.0.0",
     "@adonisjs/core": "^5.0.5-canary-rc"
-	},
-	"peerDependenciesMeta": {
-		"@adonisjs/auth": {
-			"optional": true
-		}
-	},
+  },
+  "peerDependenciesMeta": {
+    "@adonisjs/auth": {
+      "optional": true
+    },
+    "@adonisjs/view": {
+      "optional": true
+    }
+  },
   "adonisjs": {
     "templates": {
       "start": [

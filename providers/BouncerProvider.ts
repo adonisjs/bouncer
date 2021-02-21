@@ -39,5 +39,15 @@ export default class BouncerServiceProvider {
 				)
 			}
 		)
+
+		this.app.container.withBindings(['Adonis/Core/Server', 'Adonis/Core/View'], (Server, View) => {
+			const { CanTag, CannotTag } = require('../src/Bindings/View')
+			View.registerTag(CanTag)
+			View.registerTag(CannotTag)
+
+			Server.hooks.before(async (ctx) => {
+				ctx.view.share({ bouncer: ctx.bouncer })
+			})
+		})
 	}
 }

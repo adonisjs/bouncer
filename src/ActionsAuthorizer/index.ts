@@ -13,6 +13,7 @@ import { ProfilerContract, ProfilerRowContract } from '@ioc:Adonis/Core/Profiler
 import { ActionsAuthorizerContract, AuthorizationResult } from '@ioc:Adonis/Addons/Bouncer'
 
 import { Bouncer } from '../Bouncer'
+import { Exception } from '@poppinss/utils'
 import { AuthorizationProfiler } from '../Profiler'
 import { PoliciesAuthorizer } from '../PoliciesAuthorizer'
 import { AuthorizationException } from '../Exceptions/AuthorizationException'
@@ -152,6 +153,20 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 	}
 
 	/**
+	 * Create a new authorizer instance for a given user
+	 */
+	public forUser(user: any) {
+		return new ActionsAuthorizer(user, this.bouncer).setProfiler(this.profiler)
+	}
+
+	/**
+	 * Returns an instance of the policies authorizer
+	 */
+	public with(policy: string): any {
+		return new PoliciesAuthorizer(this.user, this.bouncer, policy).setProfiler(this.profiler)
+	}
+
+	/**
 	 * Find if a user is allowed to perform the action
 	 */
 	public async allows(action: string, ...args: any[]) {
@@ -181,16 +196,46 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
 	}
 
 	/**
-	 * Create a new authorizer instance for a given user
+	 * The untyped version of [[this.allows]] and support references a policy.action
+	 * via string. Added mainly to be used inside the templates.
+	 *
+	 * For example:
+	 * ```
+	 * bouncer.can('PostPolicy.update', post)
+	 * ```
 	 */
-	public forUser(user: any) {
-		return new ActionsAuthorizer(user, this.bouncer).setProfiler(this.profiler)
+	public async can(policyOrAction: string, ...args: any[]) {
+		if (!policyOrAction) {
+			throw new Exception('The "can" method expects action name as the first argument')
+		}
+
+		const tokens = policyOrAction.split('.')
+		if (tokens.length > 1) {
+			return this.with(tokens.shift()!).allows(tokens.join('.'), ...args)
+		}
+
+		return this.allows(tokens.join('.'), ...args)
 	}
 
 	/**
-	 * Returns an instance of the policies authorizer
+	 * The untyped version of [[this.denies]] and support references a policy.action
+	 * via string. Added mainly to be used inside the templates.
+	 *
+	 * For example:
+	 * ```
+	 * bouncer.cannot('PostPolicy.update', post)
+	 * ```
 	 */
-	public with(policy: string): any {
-		return new PoliciesAuthorizer(this.user, this.bouncer, policy).setProfiler(this.profiler)
+	public async cannot(policyOrAction: string, ...args: any[]) {
+		if (!policyOrAction) {
+			throw new Exception('The "cannot" method expects action name as the first argument')
+		}
+
+		const tokens = policyOrAction.split('.')
+		if (tokens.length > 1) {
+			return this.with(tokens.shift()!).denies(tokens.join('.'), ...args)
+		}
+
+		return this.denies(tokens.join('.'), ...args)
 	}
 }

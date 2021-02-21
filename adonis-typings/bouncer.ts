@@ -266,6 +266,28 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
 		with<Policy extends keyof PoliciesList>(
 			policy: Policy
 		): PoliciesAuthorizerContract<ActionsUser, Policy>
+
+		/**
+		 * The untyped version of [[this.allows]] and support references a policy.action
+		 * via string. Added mainly to be used inside the templates.
+		 *
+		 * For example:
+		 * ```
+		 * bouncer.can('PostPolicy.update', post)
+		 * ```
+		 */
+		can(action: string, ...args: any[]): Promise<boolean>
+
+		/**
+		 * The untyped version of [[this.denies]] and support references a policy.action
+		 * via string. Added mainly to be used inside the templates.
+		 *
+		 * For example:
+		 * ```
+		 * bouncer.cannot('PostPolicy.update', post)
+		 * ```
+		 */
+		cannot(action: string, ...args: any[]): Promise<boolean>
 	}
 
 	/**
