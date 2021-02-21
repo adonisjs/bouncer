@@ -8,7 +8,7 @@
  */
 
 import { join } from 'path'
-import camelcase from 'camelcase'
+import { string } from '@poppinss/utils/build/helpers'
 import { BaseCommand, flags, args } from '@adonisjs/core/build/standalone'
 
 /**
@@ -89,7 +89,7 @@ export default class MakePolicyCommand extends BaseCommand {
    * Makes the model variable name
    */
   private makeModelVariable(model: string) {
-    return camelcase(model)
+    return string.camelCase(model)
   }
 
   /**
