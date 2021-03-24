@@ -11,7 +11,6 @@ import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 
 export default class BouncerServiceProvider {
   constructor(protected app: ApplicationContract) {}
-  public static needsApplication = true
 
   /**
    * Register bouncer to the container
