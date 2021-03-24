@@ -7,6 +7,7 @@
  * file that was distributed with this source code.
  */
 
+import { EdgeError } from 'edge-error'
 import { TagContract } from '@ioc:Adonis/Core/View'
 
 /**
@@ -17,6 +18,14 @@ export const CanTag: TagContract = {
   block: true,
   seekable: true,
   compile(parser, buffer, token) {
+    if (!token.properties.jsArg.trim()) {
+      throw new EdgeError('Define the action name to authorize', 'E_RUNTIME_EXCEPTION', {
+        filename: token.filename,
+        line: token.loc.start.line,
+        col: token.loc.start.col,
+      })
+    }
+
     const parsed = parser.utils.transformAst(
       parser.utils.generateAST(token.properties.jsArg, token.loc, token.filename),
       token.filename,
@@ -60,6 +69,14 @@ export const CannotTag: TagContract = {
   block: true,
   seekable: true,
   compile(parser, buffer, token) {
+    if (!token.properties.jsArg.trim()) {
+      throw new EdgeError('Define the action name to authorize', 'E_RUNTIME_EXCEPTION', {
+        filename: token.filename,
+        line: token.loc.start.line,
+        col: token.loc.start.col,
+      })
+    }
+
     const parsed = parser.utils.transformAst(
       parser.utils.generateAST(token.properties.jsArg, token.loc, token.filename),
       token.filename,
