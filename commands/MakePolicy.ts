@@ -47,11 +47,6 @@ export default class MakePolicyCommand extends BaseCommand {
    */
   @flags.string({
     description: 'Name of the resource model to authorize',
-    async defaultValue(self) {
-      return self.prompt.ask('Enter the name of the resource model to authorize', {
-        hint: 'optional',
-      })
-    },
   })
   public resourceModel: string
 
@@ -60,12 +55,6 @@ export default class MakePolicyCommand extends BaseCommand {
    */
   @flags.string({
     description: 'Name of the user model to be authorized',
-    async defaultValue(self) {
-      return self.prompt.ask('Enter the name of the user model to be authorized', {
-        hint: 'optional',
-        default: 'User',
-      })
-    },
   })
   public userModel: string
 
@@ -90,6 +79,27 @@ export default class MakePolicyCommand extends BaseCommand {
    */
   private makeModelVariable(model: string) {
     return string.camelCase(model)
+  }
+
+  /**
+   * Prompt for models when not explicitly defined
+   */
+  public async prepare() {
+    if (!this.resourceModel) {
+      this.resourceModel = await this.prompt.ask(
+        'Enter the name of the resource model to authorize',
+        {
+          hint: 'optional',
+        }
+      )
+    }
+
+    if (!this.userModel) {
+      this.userModel = await this.prompt.ask('Enter the name of the user model to be authorized', {
+        hint: 'optional',
+        default: 'User',
+      })
+    }
   }
 
   /**
