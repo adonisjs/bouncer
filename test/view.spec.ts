@@ -51,7 +51,7 @@ test.group('Can Tag', (group) => {
     })
 
     const view = app.container.resolveBinding('Adonis/Core/View')
-    const output = await view.renderAsync('eval', { bouncer: authorizer, post: new Post(1) })
+    const output = await view.render('eval', { bouncer: authorizer, post: new Post(1) })
     assert.equal(output.trim(), 'The post user id is 1')
   })
 
@@ -75,7 +75,7 @@ test.group('Can Tag', (group) => {
     })
 
     const view = app.container.resolveBinding('Adonis/Core/View')
-    const output = await view.renderAsync('eval', { bouncer: authorizer })
+    const output = await view.render('eval', { bouncer: authorizer })
     assert.equal(output.trim(), '<a> Create post </a>')
   })
 
@@ -114,7 +114,7 @@ test.group('Can Tag', (group) => {
 
     const view = app.container.resolveBinding('Adonis/Core/View')
 
-    const output = await view.renderAsync('eval', { bouncer: authorizer, post: new Post(1) })
+    const output = await view.render('eval', { bouncer: authorizer, post: new Post(1) })
     assert.deepEqual(
       output.split('\n').map((line) => line.trim()),
       ['<a> Create post </a>', '', '<a> View post </a>']
@@ -155,7 +155,7 @@ test.group('Can Tag', (group) => {
 
     const view = app.container.resolveBinding('Adonis/Core/View')
 
-    const output = await view.renderAsync('eval', { bouncer: authorizer, post: new Post(1) })
+    const output = await view.render('eval', { bouncer: authorizer, post: new Post(1) })
     assert.deepEqual(
       output.split('\n').map((line) => line.trim()),
       ['<a> Create post </a>', '', '<a> View post </a>']
@@ -204,7 +204,7 @@ test.group('Can Tag', (group) => {
     })
 
     const view = app.container.resolveBinding('Adonis/Core/View')
-    const output = await view.renderAsync('eval', { bouncer: authorizer, post: new Post(1) })
+    const output = await view.render('eval', { bouncer: authorizer, post: new Post(1) })
     assert.deepEqual(
       output.split('\n').map((line) => line.trim()),
       ['<a> Create post </a>', '', '<a> View post </a>']

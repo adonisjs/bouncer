@@ -81,8 +81,8 @@
   },
   "peerDependencies": {
     "@adonisjs/auth": "^8.0.0",
-    "@adonisjs/view": "^6.0.0",
-    "@adonisjs/core": "^5.1.0"
+    "@adonisjs/core": "^5.1.0",
+    "@adonisjs/view": "^6.0.0"
   },
   "peerDependenciesMeta": {
     "@adonisjs/auth": {
