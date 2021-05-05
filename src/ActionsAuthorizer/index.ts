@@ -210,11 +210,17 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
     }
 
     const tokens = policyOrAction.split('.')
+    const usingCustomAuthorizer = args.length && args[0] instanceof ActionsAuthorizer
+
     if (tokens.length > 1) {
-      return this.with(tokens.shift()!).allows(tokens.join('.'), ...args)
+      return usingCustomAuthorizer
+        ? args[0].with(tokens.shift()!).allows(tokens.join('.'), ...args.slice(1))
+        : this.with(tokens.shift()!).allows(tokens.join('.'), ...args)
     }
 
-    return this.allows(tokens.join('.'), ...args)
+    return usingCustomAuthorizer
+      ? args[0].allows(tokens.join('.'), ...args.slice(1))
+      : this.allows(tokens.join('.'), ...args)
   }
 
   /**
@@ -232,10 +238,16 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
     }
 
     const tokens = policyOrAction.split('.')
+    const usingCustomAuthorizer = args.length && args[0] instanceof ActionsAuthorizer
+
     if (tokens.length > 1) {
-      return this.with(tokens.shift()!).denies(tokens.join('.'), ...args)
+      return usingCustomAuthorizer
+        ? args[0].with(tokens.shift()!).denies(tokens.join('.'), ...args.slice(1))
+        : this.with(tokens.shift()!).denies(tokens.join('.'), ...args)
     }
 
-    return this.denies(tokens.join('.'), ...args)
+    return usingCustomAuthorizer
+      ? args[0].denies(tokens.join('.'), ...args.slice(1))
+      : this.denies(tokens.join('.'), ...args)
   }
 }

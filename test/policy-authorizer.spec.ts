@@ -733,6 +733,39 @@ test.group('Policy Authorizer', (group) => {
     assert.isFalse(await authorizer.cannot('UserPolicy.viewPost', new Post(1)))
   })
 
+  test('authorize using the can/cannot method for a custom user', async (assert) => {
+    const bouncer = new Bouncer(app)
+    class User {
+      constructor(public id: number) {}
+    }
+
+    class Post {
+      constructor(public userId: number) {}
+    }
+
+    class UserPolicy extends bouncer.BasePolicy {
+      public viewPost(user: User, post: Post) {
+        return user.id === post.userId
+      }
+    }
+
+    UserPolicy.boot()
+
+    bouncer.registerPolicies({
+      UserPolicy: async () => {
+        return { default: UserPolicy }
+      },
+    })
+
+    const authorizer = bouncer.forUser(new User(2))
+    assert.isTrue(
+      await authorizer.can('UserPolicy.viewPost', bouncer.forUser(new User(1)), new Post(1))
+    )
+    assert.isFalse(
+      await authorizer.cannot('UserPolicy.viewPost', bouncer.forUser(new User(1)), new Post(1))
+    )
+  })
+
   test('raise exception when using invalid policy name via can/cannot method', async (assert) => {
     assert.plan(1)
 

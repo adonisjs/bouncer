@@ -555,6 +555,27 @@ test.group('Actions Authorizer', (group) => {
     assert.isTrue(await authorizer.can('viewPost', new Post(1)))
     assert.isFalse(await authorizer.cannot('viewPost', new Post(1)))
   })
+
+  test('authorize action using the can/cannot for a custom user', async (assert) => {
+    class User {
+      constructor(public id: number) {}
+    }
+
+    class Post {
+      constructor(public userId: number) {}
+    }
+
+    const bouncer = new Bouncer(app)
+    bouncer.define('viewPost', (user: User, post: Post) => {
+      return user.id === post.userId
+    })
+
+    const authorizer = bouncer.forUser(new User(2))
+    assert.isTrue(await authorizer.can('viewPost', authorizer.forUser(new User(1)), new Post(1)))
+    assert.isFalse(
+      await authorizer.cannot('viewPost', authorizer.forUser(new User(1)), new Post(1))
+    )
+  })
 })
 
 test.group('Actions Authorizer | Profile', (group) => {
