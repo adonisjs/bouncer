@@ -170,11 +170,11 @@ export default class MakePolicyCommand extends BaseCommand {
         imports,
       })
       .appRoot(this.application.cliCwd || this.application.appRoot)
-      .toJSON()
 
     await this.generator.run()
+    const fileJSON = file.toJSON()
 
-    if (file.state === 'persisted') {
+    if (fileJSON.state === 'persisted') {
       this.ui
         .instructions()
         .heading('Register Policy')
@@ -184,7 +184,7 @@ export default class MakePolicyCommand extends BaseCommand {
           `Add ${this.colors
             .cyan()
             .underline(
-              `${file.filename}: () => import('${policiesNamespace}/${file.filename}')`
+              `${fileJSON.filename}: () => import('${policiesNamespace}/${fileJSON.filename}')`
             )} to the object`
         )
         .render()
