@@ -30,7 +30,7 @@
   "author": "virk,adonisjs",
   "license": "MIT",
   "devDependencies": {
-    "@adonisjs/auth": "^8.0.2",
+    "@adonisjs/auth": "^8.0.3",
     "@adonisjs/core": "^5.1.6",
     "@adonisjs/mrm-preset": "^3.0.0",
     "@adonisjs/require-ts": "^2.0.4",
