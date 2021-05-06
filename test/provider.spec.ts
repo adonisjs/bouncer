@@ -26,6 +26,14 @@ test.group('Setup provider', (group) => {
   test('get authorizer instance for a given request', async (assert) => {
     const app = await setup(true)
     const ctx = app.container.use('Adonis/Core/HttpContext').create('/', {})
+
+    assert.instanceOf(ctx.bouncer, ActionsAuthorizer)
+    assert.strictEqual(ctx.bouncer, ctx.bouncer)
+  })
+
+  test('share authorizer with view', async (assert) => {
+    const app = await setup(true)
+    const ctx = app.container.use('Adonis/Core/HttpContext').create('/', {})
     assert.instanceOf(ctx.bouncer, ActionsAuthorizer)
     assert.strictEqual(ctx.bouncer, ctx.bouncer)
   })

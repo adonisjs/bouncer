@@ -29,7 +29,31 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
    */
   private profiler?: ProfilerRowContract | ProfilerContract
 
-  constructor(public user: any, private bouncer: Bouncer) {}
+  /**
+   * We lookup the user lazily using the "userOrResolver" property. This
+   * allows the class consumer to provide the user after creating
+   * the authorizer instance.
+   *
+   * We stop calling the resolver, once we receive the user instance.
+   */
+  public user: any
+  constructor(private userOrResolver: any, private bouncer: Bouncer) {}
+
+  /**
+   * Resolve the user from the userOrResolver
+   * property
+   */
+  private resolveUser() {
+    if (this.user) {
+      return
+    }
+
+    if (typeof this.userOrResolver === 'function') {
+      this.user = this.userOrResolver()
+    } else {
+      this.user = this.userOrResolver
+    }
+  }
 
   /**
    * Run all hooks for a given lifecycle phase
@@ -155,21 +179,24 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
   /**
    * Create a new authorizer instance for a given user
    */
-  public forUser(user: any) {
-    return new ActionsAuthorizer(user, this.bouncer).setProfiler(this.profiler)
+  public forUser(userOrResolver: any) {
+    return new ActionsAuthorizer(userOrResolver, this.bouncer).setProfiler(this.profiler)
   }
 
   /**
    * Returns an instance of the policies authorizer
    */
   public with(policy: string): any {
-    return new PoliciesAuthorizer(this.user, this.bouncer, policy).setProfiler(this.profiler)
+    return new PoliciesAuthorizer(this.userOrResolver, this.bouncer, policy).setProfiler(
+      this.profiler
+    )
   }
 
   /**
    * Find if a user is allowed to perform the action
    */
   public async allows(action: string, ...args: any[]) {
+    this.resolveUser()
     const { authorized } = await this.authorizeAction(action, args)
     return authorized === true
   }
@@ -178,6 +205,7 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
    * Find if a user is not allowed to perform the action
    */
   public async denies(action: string, ...args: any[]) {
+    this.resolveUser()
     const { authorized } = await this.authorizeAction(action, args)
     return authorized === false
   }
@@ -186,6 +214,7 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
    * Authorize user against the given action
    */
   public async authorize(action: string, ...args: any[]) {
+    this.resolveUser()
     const { authorized, errorResponse } = await this.authorizeAction(action, args)
 
     if (authorized) {
@@ -193,6 +222,37 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
     }
 
     throw AuthorizationException.raise(errorResponse![0], errorResponse![1])
+  }
+
+  /**
+   * Parses the ability arguments passed to "can" and "cannot" methods
+   */
+  private parseAbilityArguments(policyOrAction: string, args: any[]) {
+    const tokens = policyOrAction.split('.')
+    const usingCustomAuthorizer = args.length && args[0] instanceof ActionsAuthorizer
+
+    let output: {
+      action: string
+      args: any[]
+      policy?: null | string
+      authorizer: ActionsAuthorizer
+    } = {
+      action: policyOrAction,
+      authorizer: this,
+      args: args,
+    }
+
+    if (usingCustomAuthorizer) {
+      output.authorizer = args.shift()
+      output.args = args
+    }
+
+    if (tokens.length > 1) {
+      output.policy = tokens.shift()
+      output.action = tokens.join('.')
+    }
+
+    return output
   }
 
   /**
@@ -209,18 +269,14 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
       throw new Exception('The "can" method expects action name as the first argument')
     }
 
-    const tokens = policyOrAction.split('.')
-    const usingCustomAuthorizer = args.length && args[0] instanceof ActionsAuthorizer
+    const { action, policy, authorizer, args: parsedArgs } = this.parseAbilityArguments(
+      policyOrAction,
+      args
+    )
 
-    if (tokens.length > 1) {
-      return usingCustomAuthorizer
-        ? args[0].with(tokens.shift()!).allows(tokens.join('.'), ...args.slice(1))
-        : this.with(tokens.shift()!).allows(tokens.join('.'), ...args)
-    }
-
-    return usingCustomAuthorizer
-      ? args[0].allows(tokens.join('.'), ...args.slice(1))
-      : this.allows(tokens.join('.'), ...args)
+    return policy
+      ? authorizer.with(policy).allows(action, ...parsedArgs)
+      : authorizer.allows(action, ...parsedArgs)
   }
 
   /**
@@ -237,17 +293,13 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
       throw new Exception('The "cannot" method expects action name as the first argument')
     }
 
-    const tokens = policyOrAction.split('.')
-    const usingCustomAuthorizer = args.length && args[0] instanceof ActionsAuthorizer
+    const { action, policy, authorizer, args: parsedArgs } = this.parseAbilityArguments(
+      policyOrAction,
+      args
+    )
 
-    if (tokens.length > 1) {
-      return usingCustomAuthorizer
-        ? args[0].with(tokens.shift()!).denies(tokens.join('.'), ...args.slice(1))
-        : this.with(tokens.shift()!).denies(tokens.join('.'), ...args)
-    }
-
-    return usingCustomAuthorizer
-      ? args[0].denies(tokens.join('.'), ...args.slice(1))
-      : this.denies(tokens.join('.'), ...args)
+    return policy
+      ? authorizer.with(policy).denies(action, ...parsedArgs)
+      : authorizer.denies(action, ...parsedArgs)
   }
 }

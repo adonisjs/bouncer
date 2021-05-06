@@ -802,6 +802,43 @@ test.group('Policy Authorizer', (group) => {
       )
     }
   })
+
+  test('pass resolver to the policy when using with method', async (assert) => {
+    const bouncer = new Bouncer(app)
+    class User {
+      constructor(public id: number) {}
+    }
+
+    class Post {
+      constructor(public userId: number) {}
+    }
+
+    class UserPolicy extends bouncer.BasePolicy {
+      public viewPost(user: User, post: Post) {
+        return user.id === post.userId
+      }
+    }
+
+    UserPolicy.boot()
+
+    bouncer.registerPolicies({
+      UserPolicy: async () => {
+        return { default: UserPolicy }
+      },
+    })
+
+    bouncer.define('viewPost', (user: User, post: Post) => {
+      return user.id === post.userId
+    })
+
+    let i = 0
+    const authorizer = bouncer.forUser(() => {
+      return new User(++i)
+    })
+
+    assert.isTrue(await authorizer.allows('viewPost', new Post(1)))
+    assert.isTrue(await authorizer.with('UserPolicy').allows('viewPost', new Post(2)))
+  })
 })
 
 test.group('Actions Authorizer | Profile', (group) => {

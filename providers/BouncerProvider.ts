@@ -9,6 +9,16 @@
 
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 
+/**
+ * Lazily resolves the user from the auth module. Coz the bouncer
+ * property may get access before the auth middleware is
+ * executed.
+ */
+class AuthUserResolver {
+  public getUser = () => this.auth.user
+  constructor(private auth: any) {}
+}
+
 export default class BouncerServiceProvider {
   constructor(protected app: ApplicationContract) {}
 
@@ -32,7 +42,9 @@ export default class BouncerServiceProvider {
         HttpContext.getter(
           'bouncer',
           function bouncer() {
-            return Bouncer.forUser(this.auth ? this.auth.user : null) as any
+            return Bouncer.forUser(
+              this.auth ? new AuthUserResolver(this.auth).getUser : null
+            ) as any
           },
           true
         )

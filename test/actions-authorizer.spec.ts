@@ -576,6 +576,24 @@ test.group('Actions Authorizer', (group) => {
       await authorizer.cannot('viewPost', authorizer.forUser(new User(1)), new Post(1))
     )
   })
+
+  test('resolve user using the resolver function', async (assert) => {
+    class User {
+      constructor(public id: number) {}
+    }
+
+    class Post {
+      constructor(public userId: number) {}
+    }
+
+    const bouncer = new Bouncer(app)
+    bouncer.define('viewPost', (user: User, post: Post) => {
+      return user.id === post.userId
+    })
+
+    const authorizer = bouncer.forUser(() => new User(1))
+    assert.isTrue(await authorizer.allows('viewPost', new Post(1)))
+  })
 })
 
 test.group('Actions Authorizer | Profile', (group) => {

@@ -39,7 +39,15 @@ export class PoliciesAuthorizer implements PoliciesAuthorizerContract<any, keyof
    */
   private policyInstance: BasePolicyContract
 
-  constructor(public user: any, private bouncer: Bouncer, private policy: string) {}
+  /**
+   * We lookup the user lazily using the "userOrResolver" property. This
+   * allows the class consumer to provide the user after creating
+   * the authorizer instance.
+   *
+   * We stop calling the resolver, once we receive the user instance.
+   */
+  public user: any
+  constructor(private userOrResolver: any, private bouncer: Bouncer, private policy: string) {}
 
   /**
    * Resolve policy
@@ -49,6 +57,22 @@ export class PoliciesAuthorizer implements PoliciesAuthorizerContract<any, keyof
       return
     }
     this.policyInstance = await this.bouncer.resolvePolicy(this.policy)
+  }
+
+  /**
+   * Resolve the user from the userOrResolver
+   * property
+   */
+  private resolveUser() {
+    if (this.user) {
+      return
+    }
+
+    if (typeof this.userOrResolver === 'function') {
+      this.user = this.userOrResolver()
+    } else {
+      this.user = this.userOrResolver
+    }
   }
 
   /**
@@ -165,6 +189,7 @@ export class PoliciesAuthorizer implements PoliciesAuthorizerContract<any, keyof
    */
   public async allows(action: string, ...args: any[]) {
     await this.resolvePolicy()
+    this.resolveUser()
     const { authorized } = await this.authorizeAction(action, args)
     return authorized === true
   }
@@ -174,6 +199,7 @@ export class PoliciesAuthorizer implements PoliciesAuthorizerContract<any, keyof
    */
   public async denies(action: string, ...args: any[]) {
     await this.resolvePolicy()
+    this.resolveUser()
     const { authorized } = await this.authorizeAction(action, args)
     return authorized === false
   }
@@ -183,8 +209,9 @@ export class PoliciesAuthorizer implements PoliciesAuthorizerContract<any, keyof
    */
   public async authorize(action: string, ...args: any[]) {
     await this.resolvePolicy()
-    const { authorized, errorResponse } = await this.authorizeAction(action, args)
+    this.resolveUser()
 
+    const { authorized, errorResponse } = await this.authorizeAction(action, args)
     if (authorized) {
       return
     }
@@ -195,7 +222,9 @@ export class PoliciesAuthorizer implements PoliciesAuthorizerContract<any, keyof
   /**
    * Create a new authorizer instance for a given user
    */
-  public forUser(user: any) {
-    return new PoliciesAuthorizer(user, this.bouncer, this.policy).setProfiler(this.profiler)
+  public forUser(userOrResolver: any) {
+    return new PoliciesAuthorizer(userOrResolver, this.bouncer, this.policy).setProfiler(
+      this.profiler
+    )
   }
 }
