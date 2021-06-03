@@ -52,11 +52,6 @@
     "ts-dedent": "^2.1.1",
     "typescript": "^4.3.2"
   },
-  "husky": {
-    "hooks": {
-      "commit-msg": "node ./node_modules/@adonisjs/mrm-preset/validateCommit/conventional/validate.js"
-    }
-  },
   "nyc": {
     "exclude": [
       "test"
