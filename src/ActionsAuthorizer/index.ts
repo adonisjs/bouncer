@@ -269,10 +269,12 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
       throw new Exception('The "can" method expects action name as the first argument')
     }
 
-    const { action, policy, authorizer, args: parsedArgs } = this.parseAbilityArguments(
-      policyOrAction,
-      args
-    )
+    const {
+      action,
+      policy,
+      authorizer,
+      args: parsedArgs,
+    } = this.parseAbilityArguments(policyOrAction, args)
 
     return policy
       ? authorizer.with(policy).allows(action, ...parsedArgs)
@@ -293,10 +295,12 @@ export class ActionsAuthorizer implements ActionsAuthorizerContract<any> {
       throw new Exception('The "cannot" method expects action name as the first argument')
     }
 
-    const { action, policy, authorizer, args: parsedArgs } = this.parseAbilityArguments(
-      policyOrAction,
-      args
-    )
+    const {
+      action,
+      policy,
+      authorizer,
+      args: parsedArgs,
+    } = this.parseAbilityArguments(policyOrAction, args)
 
     return policy
       ? authorizer.with(policy).denies(action, ...parsedArgs)

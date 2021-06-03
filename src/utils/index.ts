@@ -17,9 +17,9 @@ const ERROR_STATUS = 403
 /**
  * Normalizes the authorization hook response
  */
-export function normalizeHookResponse(
-  response: any
-): { status: 'skipped' | 'authorized' | 'unauthorized' } {
+export function normalizeHookResponse(response: any): {
+  status: 'skipped' | 'authorized' | 'unauthorized'
+} {
   return {
     status:
       response === null || response === undefined
