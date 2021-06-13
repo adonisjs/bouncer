@@ -44,8 +44,10 @@ declare module '@ioc:Adonis/Addons/Bouncer' {
    * Returns an array of arguments accepted by a given action, except the user
    * argument
    */
-  export type GetActionRemainingArgs<Actions extends any, Action extends keyof Actions> =
-    Actions[Action] extends (user: any, ...args: infer A) => any ? A : never
+  export type GetActionRemainingArgs<
+    Actions extends any,
+    Action extends keyof Actions
+  > = Actions[Action] extends (user: any, ...args: infer A) => any ? A : never
 
   /**
    * Extracts types from the registered actions
