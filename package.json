@@ -1,6 +1,6 @@
 {
   "name": "@adonisjs/bouncer",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Authorization layer for AdonisJS",
   "main": "build/providers/BouncerProvider.js",
   "files": [
