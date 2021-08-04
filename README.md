@@ -23,7 +23,7 @@
       Website
     </a>
     <span> | </span>
-    <a href="https://preview.adonisjs.com/guides/authorization/introduction">
+    <a href="https://docs.adonisjs.com/guides/authorization">
       Guides
     </a>
     <span> | </span>
