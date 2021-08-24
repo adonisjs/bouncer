@@ -19,7 +19,7 @@
 
 <div align="center">
   <h3>
-    <a href="https://preview.adonisjs.com">
+    <a href="https://adonisjs.com">
       Website
     </a>
     <span> | </span>
