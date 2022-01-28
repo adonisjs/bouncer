@@ -70,7 +70,7 @@
     "anyBranch": false
   },
   "dependencies": {
-    "@poppinss/utils": "^3.2.0"
+    "@poppinss/utils": "^4.0.0"
   },
   "peerDependencies": {
     "@adonisjs/auth": "^8.0.0",
