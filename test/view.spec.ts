@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-import test from 'japa'
+import { test } from '@japa/runner'
 import dedent from 'ts-dedent'
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 
@@ -18,16 +18,16 @@ import { CanTag } from '../src/Bindings/View'
 let app: ApplicationContract
 
 test.group('Can Tag', (group) => {
-  group.beforeEach(async () => {
+  group.each.setup(async () => {
     app = await setup(true)
     app.container.resolveBinding('Adonis/Core/View').registerTag(CanTag)
   })
 
-  group.afterEach(async () => {
+  group.each.teardown(async () => {
     await fs.cleanup()
   })
 
-  test('use "can tag" with action name', async (assert) => {
+  test('use "can tag" with action name', async ({ assert }) => {
     class User {
       constructor(public id: number) {}
     }
@@ -55,7 +55,7 @@ test.group('Can Tag', (group) => {
     assert.equal(output.trim(), 'The post user id is 1')
   })
 
-  test('use "can tag" without action arguments', async (assert) => {
+  test('use "can tag" without action arguments', async ({ assert }) => {
     class User {
       constructor(public id: number) {}
     }
@@ -79,7 +79,7 @@ test.group('Can Tag', (group) => {
     assert.equal(output.trim(), '<a> Create post </a>')
   })
 
-  test('use "can tag" with a literal value', async (assert) => {
+  test('use "can tag" with a literal value', async ({ assert }) => {
     class User {
       constructor(public id: number) {}
     }
@@ -121,7 +121,7 @@ test.group('Can Tag', (group) => {
     )
   })
 
-  test('use "can tag" as a member expression', async (assert) => {
+  test('use "can tag" as a member expression', async ({ assert }) => {
     class User {
       constructor(public id: number) {}
     }
@@ -162,7 +162,7 @@ test.group('Can Tag', (group) => {
     )
   })
 
-  test('use "can tag" as template literal', async (assert) => {
+  test('use "can tag" as template literal', async ({ assert }) => {
     class User {
       constructor(public id: number) {}
     }
