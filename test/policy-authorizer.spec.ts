@@ -6,7 +6,7 @@
  * file that was distributed with this source code.
  */
 
-import test from 'japa'
+import { test } from '@japa/runner'
 
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 
@@ -17,15 +17,15 @@ import { AuthorizationResult } from '@ioc:Adonis/Addons/Bouncer'
 let app: ApplicationContract
 
 test.group('Policy Authorizer', (group) => {
-  group.beforeEach(async () => {
+  group.each.setup(async () => {
     app = await setup(false)
   })
 
-  group.afterEach(async () => {
+  group.each.teardown(async () => {
     await fs.cleanup()
   })
 
-  test('return true if a user is allowed to perform an action', async (assert) => {
+  test('return true if a user is allowed to perform an action', async ({ assert }) => {
     const bouncer = new Bouncer(app)
     class User {
       constructor(public id: number) {}
@@ -53,7 +53,7 @@ test.group('Policy Authorizer', (group) => {
     assert.isTrue(await authorizer.with('UserPolicy').allows('viewPost', new Post(1)))
   })
 
-  test('return false if a user is not allowed to perform an action', async (assert) => {
+  test('return false if a user is not allowed to perform an action', async ({ assert }) => {
     const bouncer = new Bouncer(app)
     class User {
       constructor(public id: number) {}
@@ -81,7 +81,7 @@ test.group('Policy Authorizer', (group) => {
     assert.isFalse(await authorizer.with('UserPolicy').allows('viewPost', new Post(2)))
   })
 
-  test('return true if a user is denied to perform an action', async (assert) => {
+  test('return true if a user is denied to perform an action', async ({ assert }) => {
     const bouncer = new Bouncer(app)
     class User {
       constructor(public id: number) {}
@@ -109,7 +109,7 @@ test.group('Policy Authorizer', (group) => {
     assert.isTrue(await authorizer.with('UserPolicy').denies('viewPost', new Post(2)))
   })
 
-  test('return false if a user is not denied to perform an action', async (assert) => {
+  test('return false if a user is not denied to perform an action', async ({ assert }) => {
     const bouncer = new Bouncer(app)
     class User {
       constructor(public id: number) {}
@@ -137,7 +137,7 @@ test.group('Policy Authorizer', (group) => {
     assert.isFalse(await authorizer.with('UserPolicy').denies('viewPost', new Post(1)))
   })
 
-  test('raise exception when a user is not allowed to perform an action', async (assert) => {
+  test('raise exception when a user is not allowed to perform an action', async ({ assert }) => {
     assert.plan(2)
 
     const bouncer = new Bouncer(app)
@@ -173,7 +173,7 @@ test.group('Policy Authorizer', (group) => {
     }
   })
 
-  test('allow custom denial message', async (assert) => {
+  test('allow custom denial message', async ({ assert }) => {
     assert.plan(2)
 
     const bouncer = new Bouncer(app)
@@ -212,7 +212,7 @@ test.group('Policy Authorizer', (group) => {
     }
   })
 
-  test('allow custom denial message with custom status code', async (assert) => {
+  test('allow custom denial message with custom status code', async ({ assert }) => {
     assert.plan(2)
 
     const bouncer = new Bouncer(app)
@@ -251,7 +251,7 @@ test.group('Policy Authorizer', (group) => {
     }
   })
 
-  test('allow switching user at runtime', async (assert) => {
+  test('allow switching user at runtime', async ({ assert }) => {
     const bouncer = new Bouncer(app)
     class User {
       constructor(public id: number) {}
@@ -286,7 +286,7 @@ test.group('Policy Authorizer', (group) => {
     )
   })
 
-  test('authorize action from a before hook', async (assert) => {
+  test('authorize action from a before hook', async ({ assert }) => {
     let actionInvocationCounts = 0
     const bouncer = new Bouncer(app)
 
@@ -327,7 +327,7 @@ test.group('Policy Authorizer', (group) => {
     assert.equal(actionInvocationCounts, 1)
   })
 
-  test('allow before hook to authorize non-existing actions', async (assert) => {
+  test('allow before hook to authorize non-existing actions', async ({ assert }) => {
     const bouncer = new Bouncer(app)
 
     class User {
@@ -359,7 +359,7 @@ test.group('Policy Authorizer', (group) => {
     )
   })
 
-  test('allow before hook to deny non-existing actions', async (assert) => {
+  test('allow before hook to deny non-existing actions', async ({ assert }) => {
     const bouncer = new Bouncer(app)
 
     class User {
@@ -391,7 +391,7 @@ test.group('Policy Authorizer', (group) => {
     )
   })
 
-  test('raise exception when action is not defined', async (assert) => {
+  test('raise exception when action is not defined', async ({ assert }) => {
     assert.plan(1)
     const bouncer = new Bouncer(app)
 
@@ -426,7 +426,7 @@ test.group('Policy Authorizer', (group) => {
     }
   })
 
-  test('authorize action from an after hook', async (assert) => {
+  test('authorize action from an after hook', async ({ assert }) => {
     let actionInvocationCounts = 0
     const bouncer = new Bouncer(app)
 
@@ -468,7 +468,7 @@ test.group('Policy Authorizer', (group) => {
     assert.equal(actionInvocationCounts, 2)
   })
 
-  test('deny action from an after hook', async (assert) => {
+  test('deny action from an after hook', async ({ assert }) => {
     let actionInvocationCounts = 0
     const bouncer = new Bouncer(app)
 
@@ -507,7 +507,7 @@ test.group('Policy Authorizer', (group) => {
     assert.equal(actionInvocationCounts, 2)
   })
 
-  test('forwaded action response from after hook as it is', async (assert) => {
+  test('forwaded action response from after hook as it is', async ({ assert }) => {
     let actionInvocationCounts = 0
     const bouncer = new Bouncer(app)
 
@@ -544,7 +544,7 @@ test.group('Policy Authorizer', (group) => {
     assert.equal(actionInvocationCounts, 2)
   })
 
-  test('do not attempt authorization when user is missing', async (assert) => {
+  test('do not attempt authorization when user is missing', async ({ assert }) => {
     let actionInvocationCounts = 0
     const bouncer = new Bouncer(app)
 
@@ -579,7 +579,7 @@ test.group('Policy Authorizer', (group) => {
     assert.equal(actionInvocationCounts, 0)
   })
 
-  test('do invoke "before" hook when user is missing', async (assert) => {
+  test('do invoke "before" hook when user is missing', async ({ assert }) => {
     let actionInvocationCounts = 0
     assert.plan(3)
 
@@ -618,7 +618,7 @@ test.group('Policy Authorizer', (group) => {
     assert.equal(actionInvocationCounts, 0)
   })
 
-  test('do attempt authorization when user is missing and guest is allowed', async (assert) => {
+  test('do attempt authorization when user is missing and guest is allowed', async ({ assert }) => {
     let actionInvocationCounts = 0
 
     const bouncer = new Bouncer(app)
@@ -662,7 +662,7 @@ test.group('Policy Authorizer', (group) => {
     assert.equal(actionInvocationCounts, 1)
   })
 
-  test('allow guest via decorator', async (assert) => {
+  test('allow guest via decorator', async ({ assert }) => {
     let actionInvocationCounts = 0
 
     const bouncer = new Bouncer(app)
@@ -704,7 +704,7 @@ test.group('Policy Authorizer', (group) => {
     assert.equal(actionInvocationCounts, 1)
   })
 
-  test('authorize using the can/cannot method', async (assert) => {
+  test('authorize using the can/cannot method', async ({ assert }) => {
     const bouncer = new Bouncer(app)
     class User {
       constructor(public id: number) {}
@@ -733,7 +733,7 @@ test.group('Policy Authorizer', (group) => {
     assert.isFalse(await authorizer.cannot('UserPolicy.viewPost', new Post(1)))
   })
 
-  test('authorize using the can/cannot method for a custom user', async (assert) => {
+  test('authorize using the can/cannot method for a custom user', async ({ assert }) => {
     const bouncer = new Bouncer(app)
     class User {
       constructor(public id: number) {}
@@ -766,7 +766,9 @@ test.group('Policy Authorizer', (group) => {
     )
   })
 
-  test('raise exception when using invalid policy name via can/cannot method', async (assert) => {
+  test('raise exception when using invalid policy name via can/cannot method', async ({
+    assert,
+  }) => {
     assert.plan(1)
 
     const bouncer = new Bouncer(app)
@@ -803,7 +805,7 @@ test.group('Policy Authorizer', (group) => {
     }
   })
 
-  test('pass resolver to the policy when using with method', async (assert) => {
+  test('pass resolver to the policy when using with method', async ({ assert }) => {
     const bouncer = new Bouncer(app)
     class User {
       constructor(public id: number) {}
@@ -842,15 +844,15 @@ test.group('Policy Authorizer', (group) => {
 })
 
 test.group('Actions Authorizer | Profile', (group) => {
-  group.beforeEach(async () => {
+  group.each.setup(async () => {
     app = await setup(false)
   })
 
-  group.afterEach(async () => {
+  group.each.teardown(async () => {
     await fs.cleanup()
   })
 
-  test('profile authorization calls', async (assert) => {
+  test('profile authorization calls', async ({ assert }) => {
     const profilePackets: any[] = []
     const bouncer = new Bouncer(app)
 
@@ -898,7 +900,7 @@ test.group('Actions Authorizer | Profile', (group) => {
     })
   })
 
-  test('profile when action raises an exception', async (assert) => {
+  test('profile when action raises an exception', async ({ assert }) => {
     assert.plan(9)
     const profilePackets: any[] = []
     const bouncer = new Bouncer(app)
@@ -948,7 +950,7 @@ test.group('Actions Authorizer | Profile', (group) => {
     }
   })
 
-  test('profile hooks', async (assert) => {
+  test('profile hooks', async ({ assert }) => {
     const profilePackets: any[] = []
     const bouncer = new Bouncer(app)
 
@@ -1018,7 +1020,7 @@ test.group('Actions Authorizer | Profile', (group) => {
     })
   })
 
-  test('profile when before hook raises an exception', async (assert) => {
+  test('profile when before hook raises an exception', async ({ assert }) => {
     assert.plan(9)
     const bouncer = new Bouncer(app)
 
@@ -1073,7 +1075,7 @@ test.group('Actions Authorizer | Profile', (group) => {
     }
   })
 
-  test('profile when after hook raises an exception', async (assert) => {
+  test('profile when after hook raises an exception', async ({ assert }) => {
     assert.plan(15)
 
     const profilePackets: any[] = []

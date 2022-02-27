@@ -7,23 +7,23 @@
  * file that was distributed with this source code.
  */
 
-import test from 'japa'
+import { test } from '@japa/runner'
 import { Bouncer } from '../src/Bouncer'
 import { setup, fs } from '../test-helpers'
 import { ActionsAuthorizer } from '../src/ActionsAuthorizer'
 
 test.group('Setup provider', (group) => {
-  group.afterEach(async () => {
+  group.each.teardown(async () => {
     await fs.cleanup()
   })
 
-  test('register provider', async (assert) => {
+  test('register provider', async ({ assert }) => {
     const app = await setup(true)
     assert.isTrue(app.container.hasBinding('Adonis/Addons/Bouncer'))
     assert.instanceOf(app.container.use('Adonis/Addons/Bouncer'), Bouncer)
   })
 
-  test('get authorizer instance for a given request', async (assert) => {
+  test('get authorizer instance for a given request', async ({ assert }) => {
     const app = await setup(true)
     const ctx = app.container.use('Adonis/Core/HttpContext').create('/', {})
 
@@ -31,7 +31,7 @@ test.group('Setup provider', (group) => {
     assert.strictEqual(ctx.bouncer, ctx.bouncer)
   })
 
-  test('share authorizer with view', async (assert) => {
+  test('share authorizer with view', async ({ assert }) => {
     const app = await setup(true)
     const ctx = app.container.use('Adonis/Core/HttpContext').create('/', {})
     assert.instanceOf(ctx.bouncer, ActionsAuthorizer)

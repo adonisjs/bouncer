@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-import test from 'japa'
+import { test } from '@japa/runner'
 import { join } from 'path'
 import importFresh from 'import-fresh'
 import { Kernel } from '@adonisjs/ace'
@@ -19,19 +19,19 @@ import MakePolicy from '../commands/MakePolicy'
 const fs = new Filesystem(join(__dirname, '__app'))
 
 test.group('Make Policy', (group) => {
-  group.before(() => {
+  group.setup(() => {
     process.env.ADONIS_ACE_CWD = fs.basePath
   })
 
-  group.after(() => {
+  group.teardown(() => {
     delete process.env.ADONIS_ACE_CWD
   })
 
-  group.afterEach(async () => {
+  group.each.teardown(async () => {
     await fs.cleanup()
   })
 
-  test('make a policy inside the default directory', async (assert) => {
+  test('make a policy inside the default directory', async ({ assert }) => {
     await fs.add('.adonisrc.json', JSON.stringify({}))
 
     const rcContents = importFresh(join(fs.basePath, '.adonisrc.json')) as any
@@ -52,7 +52,7 @@ test.group('Make Policy', (group) => {
     ])
   })
 
-  test('make a policy with actions', async (assert) => {
+  test('make a policy with actions', async ({ assert }) => {
     await fs.add('.adonisrc.json', JSON.stringify({}))
 
     const rcContents = importFresh(join(fs.basePath, '.adonisrc.json')) as any
@@ -81,7 +81,7 @@ test.group('Make Policy', (group) => {
     ])
   })
 
-  test('do not add actions when none option is selected', async (assert) => {
+  test('do not add actions when none option is selected', async ({ assert }) => {
     await fs.add('.adonisrc.json', JSON.stringify({}))
 
     const rcContents = importFresh(join(fs.basePath, '.adonisrc.json')) as any
@@ -106,7 +106,7 @@ test.group('Make Policy', (group) => {
     ])
   })
 
-  test('ignore non-whitelisted actions', async (assert) => {
+  test('ignore non-whitelisted actions', async ({ assert }) => {
     await fs.add('.adonisrc.json', JSON.stringify({}))
 
     const rcContents = importFresh(join(fs.basePath, '.adonisrc.json')) as any
@@ -135,7 +135,7 @@ test.group('Make Policy', (group) => {
     ])
   })
 
-  test('make policy inside a custom directory', async (assert) => {
+  test('make policy inside a custom directory', async ({ assert }) => {
     await fs.add(
       '.adonisrc.json',
       JSON.stringify({
@@ -174,7 +174,7 @@ test.group('Make Policy', (group) => {
     ])
   })
 
-  test('make correct path to custom models namespace', async (assert) => {
+  test('make correct path to custom models namespace', async ({ assert }) => {
     await fs.add(
       '.adonisrc.json',
       JSON.stringify({
