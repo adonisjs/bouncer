@@ -1,0 +1,61 @@
+name: test
+on:
+  - push
+  - pull_request
+jobs:
+  lint:
+    uses: adonisjs/.github/.github/workflows/lint.yml@main
+
+  typecheck:
+    uses: adonisjs/.github/.github/workflows/typecheck.yml@main
+
+  test_linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.10.0, 21.x]
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install
+        run: npm install
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run tests
+        run: npm test
+        env:
+          REDIS_HOST: 0.0.0.0
+          REDIS_PORT: 6379
+
+  test_windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: [20.10.0, 21.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install
+        run: npm install
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run tests
+        run: npm test
+        env:
+          NO_REDIS: true
