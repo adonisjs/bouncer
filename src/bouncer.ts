@@ -66,12 +66,12 @@ export class Bouncer<
   /**
    * Pre-defined abilities
    */
-  #abilities?: Abilities
+  abilities?: Abilities
 
   /**
    * Pre-defined policies
    */
-  #policies?: Policies
+  policies?: Policies
 
   /**
    * Reference to the container resolver to construct
@@ -85,8 +85,8 @@ export class Bouncer<
     policies?: Policies
   ) {
     this.#userOrResolver = userOrResolver
-    this.#abilities = abilities
-    this.#policies = policies
+    this.abilities = abilities
+    this.policies = policies
   }
 
   /**
@@ -136,11 +136,11 @@ export class Bouncer<
       /**
        * Ensure the policy is pre-registered
        */
-      if (!this.#policies || !this.#policies[policy]) {
+      if (!this.policies || !this.policies[policy]) {
         throw new RuntimeException(`Invalid bouncer policy "${inspect(policy)}"`)
       }
 
-      return new PolicyAuthorizer(this.#getUser(), this.#policies[policy], Bouncer.responseBuilder)
+      return new PolicyAuthorizer(this.#getUser(), this.policies[policy], Bouncer.responseBuilder)
         .setContainerResolver(this.#containerResolver)
         .setEmitter(Bouncer.emitter)
     }
@@ -186,11 +186,11 @@ export class Bouncer<
     /**
      * Executing ability from a pre-defined list of abilities
      */
-    if (this.#abilities && this.#abilities[ability]) {
+    if (this.abilities && this.abilities[ability]) {
       debug('executing pre-registered ability "%s"', ability)
       return this.#emitAndRespond(
         ability,
-        await this.#abilities[ability].execute(this.#getUser(), ...args),
+        await this.abilities[ability].execute(this.#getUser(), ...args),
         args
       )
     }
