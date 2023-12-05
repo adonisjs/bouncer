@@ -25,7 +25,7 @@ export class AbilitiesBuilder<Abilities extends Record<string, BouncerAbility<an
     authorizer: Authorizer,
     options?: { allowGuest: boolean }
   ) {
-    this.abilities[name] = ability(authorizer, options) as any
+    this.abilities[name] = ability(options || { allowGuest: false }, authorizer) as any
 
     return this as unknown as AbilitiesBuilder<
       Abilities & {

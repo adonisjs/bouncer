@@ -280,12 +280,9 @@ test.group('Bouncer | actions', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.ability(
-      (_: User | null) => {
-        return true
-      },
-      { allowGuest: true }
-    )
+    const editPost = Bouncer.ability({ allowGuest: true }, (_: User | null) => {
+      return true
+    })
     const actions = { editPost }
 
     const bouncer = new Bouncer<User, typeof actions>(null, actions)
@@ -393,12 +390,9 @@ test.group('Bouncer | actions | userResolver', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.ability(
-      (_: User | null) => {
-        return true
-      },
-      { allowGuest: true }
-    )
+    const editPost = Bouncer.ability({ allowGuest: true }, (_: User | null) => {
+      return true
+    })
     const actions = { editPost }
 
     const bouncer = new Bouncer<User, typeof actions>(() => null, actions)
