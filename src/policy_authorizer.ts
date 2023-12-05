@@ -6,8 +6,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
-import { Emitter } from '@adonisjs/core/events'
 import { RuntimeException } from '@poppinss/utils'
 import { ContainerResolver } from '@adonisjs/core/container'
 
@@ -21,7 +19,7 @@ import type {
   ResponseBuilder,
   GetPolicyMethods,
   AuthorizerResponse,
-  AuthorizationEvents,
+  AuthorizationEmitter,
 } from './types.js'
 
 /**
@@ -54,7 +52,7 @@ export class PolicyAuthorizer<
   /**
    * Emitter to emit events
    */
-  #emitter?: Emitter<AuthorizationEvents>
+  #emitter?: AuthorizationEmitter
 
   /**
    * Response builder is used to normalize bouncer responses
@@ -198,7 +196,7 @@ export class PolicyAuthorizer<
    * Define the event emitter instance to use for emitting
    * authorization events
    */
-  setEmitter(emitter?: Emitter<AuthorizationEvents>): this {
+  setEmitter(emitter?: AuthorizationEmitter): this {
     this.#emitter = emitter
     return this
   }

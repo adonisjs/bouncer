@@ -8,7 +8,6 @@
  */
 
 import { inspect } from 'node:util'
-import { Emitter } from '@adonisjs/core/events'
 import { RuntimeException } from '@poppinss/utils'
 import { type ContainerResolver } from '@adonisjs/core/container'
 
@@ -24,8 +23,8 @@ import type {
   ResponseBuilder,
   UnWrapLazyImport,
   AuthorizerResponse,
+  AuthorizationEmitter,
   NarrowAbilitiesForAUser,
-  AuthorizationEvents,
 } from './types.js'
 
 /**
@@ -43,6 +42,11 @@ export class Bouncer<
   static responseBuilder: ResponseBuilder = (response) => {
     return typeof response === 'boolean' ? new AuthorizationResponse(response) : response
   }
+
+  /**
+   * Emitter to emit events
+   */
+  static emitter?: AuthorizationEmitter
 
   /**
    * Define a bouncer ability from a callback
@@ -75,11 +79,6 @@ export class Bouncer<
    */
   #containerResolver?: ContainerResolver<any>
 
-  /**
-   * Emitter to emit events
-   */
-  #emitter?: Emitter<AuthorizationEvents>
-
   constructor(
     userOrResolver: User | (() => User | null) | null,
     abilities?: Abilities,
@@ -110,8 +109,8 @@ export class Bouncer<
    */
   #emitAndRespond(abilitiy: string, result: boolean | AuthorizationResponse, args: any[]) {
     const response = Bouncer.responseBuilder(result)
-    if (this.#emitter) {
-      this.#emitter.emit('authorization:finished', {
+    if (Bouncer.emitter) {
+      Bouncer.emitter.emit('authorization:finished', {
         user: this.#user,
         action: abilitiy,
         response,
@@ -143,12 +142,12 @@ export class Bouncer<
 
       return new PolicyAuthorizer(this.#getUser(), this.#policies[policy], Bouncer.responseBuilder)
         .setContainerResolver(this.#containerResolver)
-        .setEmitter(this.#emitter)
+        .setEmitter(Bouncer.emitter)
     }
 
     return new PolicyAuthorizer(this.#getUser(), policy, Bouncer.responseBuilder)
       .setContainerResolver(this.#containerResolver)
-      .setEmitter(this.#emitter)
+      .setEmitter(Bouncer.emitter)
   }
 
   /**
@@ -156,15 +155,6 @@ export class Bouncer<
    */
   setContainerResolver(containerResolver?: ContainerResolver<any>): this {
     this.#containerResolver = containerResolver
-    return this
-  }
-
-  /**
-   * Define the event emitter instance to use for emitting
-   * authorization events
-   */
-  setEmitter(emitter?: Emitter<AuthorizationEvents>): this {
-    this.#emitter = emitter
     return this
   }
 

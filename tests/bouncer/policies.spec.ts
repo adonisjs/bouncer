@@ -11,12 +11,12 @@ import { test } from '@japa/runner'
 import { inject } from '@adonisjs/core'
 import { Container } from '@adonisjs/core/container'
 
+import { createEmitter } from '../helpers.js'
 import { Bouncer } from '../../src/bouncer.js'
 import { BasePolicy } from '../../src/base_policy.js'
 import { allowGuest } from '../../src/decorators/action.js'
 import type { AuthorizerResponse } from '../../src/types.js'
 import { AuthorizationResponse } from '../../src/response.js'
-import { createEmitter } from '../helpers.js'
 
 test.group('Bouncer | policies | types', () => {
   test('assert with method arguments with policy reference', async () => {
@@ -446,7 +446,7 @@ test.group('Bouncer | policies | types', () => {
 })
 
 test.group('Bouncer | policies', () => {
-  test('execute policy action', async ({ assert }, done) => {
+  test('execute policy action', async ({ assert, cleanup }, done) => {
     class User {
       declare id: number
       declare email: string
@@ -466,7 +466,8 @@ test.group('Bouncer | policies', () => {
 
     const emitter = createEmitter()
     const bouncer = new Bouncer(new User())
-    bouncer.setEmitter(emitter)
+    Bouncer.emitter = emitter
+    cleanup(() => (Bouncer.emitter = undefined))
 
     emitter.on('authorization:finished', (event) => {
       assert.instanceOf(event.user, User)
@@ -479,7 +480,7 @@ test.group('Bouncer | policies', () => {
     const canView = await bouncer.with(PostPolicy).execute('view')
     assert.isTrue(canView.authorized)
 
-    bouncer.setEmitter(undefined)
+    Bouncer.emitter = undefined
 
     const canViewAll = await bouncer.with(PostPolicy).execute('viewAll')
     assert.isFalse(canViewAll.authorized)

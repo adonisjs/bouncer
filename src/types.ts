@@ -85,3 +85,11 @@ export type AuthorizationEvents = {
     response: AuthorizationResponse
   }
 }
+
+/**
+ * The emitter accepted by bouncer for emit authorization
+ * events
+ */
+export type AuthorizationEmitter = {
+  emit(key: 'authorization:finished', event: AuthorizationEvents['authorization:finished']): any
+}

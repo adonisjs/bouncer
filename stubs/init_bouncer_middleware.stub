@@ -1,0 +1,30 @@
+{{#var middlewareName = generators.middlewareName(entity.name)}}
+{{#var middlewareFileName = generators.middlewareFileName(entity.name)}}
+{{{
+  exports({ to: app.middlewarePath(entity.path, middlewareFileName) })
+}}}
+import { policies } from '#policies/main'
+import * as abilities from '#abilities/main'
+import { Bouncer } from '@adonisjs/bouncer'
+import emitter from '@adonisjs/core/services/emitter'
+
+import type { HttpContext } from '@adonisjs/core/http'
+import type { NextFn } from '@adonisjs/core/types/http'
+
+/**
+ * Init bouncer middleware is used to create a bouncer instance
+ * during an HTTP request
+ */
+export default class {{ middlewareName }} {
+  async handle(
+    ctx: HttpContext,
+    next: NextFn,
+  ) {
+    const bouncer = Bouncer
+      .create(() => ctx.auth.user, abilities, policies)
+      .setContainerResolver(ctx.containerResolver)
+      .setEmitter(emitter)
+
+    return next()
+  }
+}

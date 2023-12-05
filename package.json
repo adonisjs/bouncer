@@ -15,7 +15,9 @@
   ],
   "exports": {
     ".": "./build/index.js",
-    "./types": "./build/src/types.js"
+    "./types": "./build/src/types.js",
+    "./bouncer_provider": "./build/providers/bouncer_provider.js",
+    "./plugins/edge": "./build/src/plugins/edge.js"
   },
   "scripts": {
     "pretest": "npm run lint",

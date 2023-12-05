@@ -165,7 +165,7 @@ test.group('Bouncer | actions | types', () => {
 })
 
 test.group('Bouncer | actions', () => {
-  test('execute action by reference', async ({ assert }, done) => {
+  test('execute action by reference', async ({ assert, cleanup }, done) => {
     class User {
       declare id: number
       declare email: string
@@ -174,7 +174,8 @@ test.group('Bouncer | actions', () => {
     const emitter = createEmitter()
     const editPost = Bouncer.define((_: User) => false)
     const bouncer = new Bouncer(new User())
-    bouncer.setEmitter(emitter)
+    Bouncer.emitter = emitter
+    cleanup(() => (Bouncer.emitter = undefined))
 
     emitter.on('authorization:finished', (event) => {
       assert.instanceOf(event.user, User)
@@ -188,7 +189,7 @@ test.group('Bouncer | actions', () => {
     assert.equal(response.authorized, false)
   }).waitForDone()
 
-  test('execute action from pre-defined list', async ({ assert }, done) => {
+  test('execute action from pre-defined list', async ({ assert, cleanup }, done) => {
     class User {
       declare id: number
       declare email: string
@@ -197,7 +198,8 @@ test.group('Bouncer | actions', () => {
     const emitter = createEmitter()
     const editPost = Bouncer.define((_: User) => false)
     const bouncer = new Bouncer(new User(), { editPost })
-    bouncer.setEmitter(emitter)
+    Bouncer.emitter = emitter
+    cleanup(() => (Bouncer.emitter = undefined))
 
     emitter.on('authorization:finished', (event) => {
       assert.instanceOf(event.user, User)
