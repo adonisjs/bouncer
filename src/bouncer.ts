@@ -319,4 +319,36 @@ export class Bouncer<
       throw new E_AUTHORIZATION_FAILURE(response)
     }
   }
+
+  /**
+   * Returns an object with untyped API to perform authorization
+   * checks within edge templates
+   */
+  edgeHelpers(): {
+    bouncer: {
+      parent: Bouncer<User, Abilities, Policies>
+      can(action: string, ...args: any[]): Promise<boolean>
+      cannot(action: string, ...args: any[]): Promise<boolean>
+    }
+  } {
+    return {
+      bouncer: {
+        parent: this,
+        can(action: string, ...args: any[]) {
+          const [policyName, ...policyMethods] = action.split('.')
+          if (policyMethods.length) {
+            return this.parent.with(policyName as any).allows(policyMethods.join('.'), ...args)
+          }
+          return this.parent.allows(policyName as any, ...args)
+        },
+        cannot(action: string, ...args: any[]) {
+          const [policyName, ...policyMethods] = action.split('.')
+          if (policyMethods.length) {
+            return this.parent.with(policyName as any).denies(policyMethods.join('.'), ...args)
+          }
+          return this.parent.denies(policyName as any, ...args)
+        },
+      },
+    }
+  }
 }
