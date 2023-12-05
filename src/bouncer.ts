@@ -92,6 +92,36 @@ export class Bouncer<
    */
   #containerResolver?: ContainerResolver<any>
 
+  /**
+   * An object with helpers to be shared with Edge for
+   * performing authorization.
+   */
+  edgeHelpers: {
+    bouncer: {
+      parent: Bouncer<User, Abilities, Policies>
+      can(action: string, ...args: any[]): Promise<boolean>
+      cannot(action: string, ...args: any[]): Promise<boolean>
+    }
+  } = {
+    bouncer: {
+      parent: this,
+      can(action: string, ...args: any[]) {
+        const [policyName, ...policyMethods] = action.split('.')
+        if (policyMethods.length) {
+          return this.parent.with(policyName as any).allows(policyMethods.join('.'), ...args)
+        }
+        return this.parent.allows(policyName as any, ...args)
+      },
+      cannot(action: string, ...args: any[]) {
+        const [policyName, ...policyMethods] = action.split('.')
+        if (policyMethods.length) {
+          return this.parent.with(policyName as any).denies(policyMethods.join('.'), ...args)
+        }
+        return this.parent.denies(policyName as any, ...args)
+      },
+    },
+  }
+
   constructor(
     userOrResolver: User | (() => User | null) | null,
     abilities?: Abilities,
@@ -320,38 +350,6 @@ export class Bouncer<
     const response = await this.execute(ability, ...args)
     if (!response.authorized) {
       throw new E_AUTHORIZATION_FAILURE(response)
-    }
-  }
-
-  /**
-   * Returns an object with untyped API to perform authorization
-   * checks within edge templates
-   */
-  edgeHelpers(): {
-    bouncer: {
-      parent: Bouncer<User, Abilities, Policies>
-      can(action: string, ...args: any[]): Promise<boolean>
-      cannot(action: string, ...args: any[]): Promise<boolean>
-    }
-  } {
-    return {
-      bouncer: {
-        parent: this,
-        can(action: string, ...args: any[]) {
-          const [policyName, ...policyMethods] = action.split('.')
-          if (policyMethods.length) {
-            return this.parent.with(policyName as any).allows(policyMethods.join('.'), ...args)
-          }
-          return this.parent.allows(policyName as any, ...args)
-        },
-        cannot(action: string, ...args: any[]) {
-          const [policyName, ...policyMethods] = action.split('.')
-          if (policyMethods.length) {
-            return this.parent.with(policyName as any).denies(policyMethods.join('.'), ...args)
-          }
-          return this.parent.denies(policyName as any, ...args)
-        },
-      },
     }
   }
 

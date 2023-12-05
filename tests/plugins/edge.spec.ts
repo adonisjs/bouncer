@@ -99,7 +99,7 @@ test.group('Edge plugin | abilities', () => {
     const edge = new Edge()
     edge.use(edgePluginBouncer)
 
-    const text = await edge.share(bouncer.edgeHelpers()).renderRaw(`
+    const text = await edge.share(bouncer.edgeHelpers).renderRaw(`
     @can('editPost')
       Can edit post
     @else
@@ -122,7 +122,7 @@ test.group('Edge plugin | abilities', () => {
     const edge = new Edge()
     edge.use(edgePluginBouncer)
 
-    const text = await edge.share(bouncer.edgeHelpers()).renderRaw(`
+    const text = await edge.share(bouncer.edgeHelpers).renderRaw(`
     @cannot('editPost')
       Cannot edit post
     @else
@@ -149,7 +149,7 @@ test.group('Edge plugin | abilities', () => {
     const edge = new Edge()
     edge.use(edgePluginBouncer)
 
-    const text = await edge.share(bouncer.edgeHelpers()).renderRaw(
+    const text = await edge.share(bouncer.edgeHelpers).renderRaw(
       `
     @can('editPost', posts[0])
       Can edit post 1
@@ -182,7 +182,7 @@ test.group('Edge plugin | abilities', () => {
     const edge = new Edge()
     edge.use(edgePluginBouncer)
 
-    const text = await edge.share(bouncer.edgeHelpers()).renderRaw(
+    const text = await edge.share(bouncer.edgeHelpers).renderRaw(
       `
     @cannot('editPost', posts[0])
       Cannot edit post 1
@@ -228,7 +228,7 @@ test.group('Edge plugin | policies', () => {
     const edge = new Edge()
     edge.use(edgePluginBouncer)
 
-    const text = await edge.share(bouncer.edgeHelpers()).renderRaw(`
+    const text = await edge.share(bouncer.edgeHelpers).renderRaw(`
     @can('PostPolicy.edit')
       Can edit post
     @else
@@ -266,7 +266,7 @@ test.group('Edge plugin | policies', () => {
     const edge = new Edge()
     edge.use(edgePluginBouncer)
 
-    const text = await edge.share(bouncer.edgeHelpers()).renderRaw(`
+    const text = await edge.share(bouncer.edgeHelpers).renderRaw(`
     @cannot('PostPolicy.edit')
       Cannot edit post
     @else
@@ -308,7 +308,7 @@ test.group('Edge plugin | policies', () => {
     const edge = new Edge()
     edge.use(edgePluginBouncer)
 
-    const text = await edge.share(bouncer.edgeHelpers()).renderRaw(
+    const text = await edge.share(bouncer.edgeHelpers).renderRaw(
       `
     @can('PostPolicy.edit', posts[0])
       Can edit post 1
@@ -356,7 +356,7 @@ test.group('Edge plugin | policies', () => {
     const edge = new Edge()
     edge.use(edgePluginBouncer)
 
-    const text = await edge.share(bouncer.edgeHelpers()).renderRaw(
+    const text = await edge.share(bouncer.edgeHelpers).renderRaw(
       `
     @cannot('PostPolicy.edit', posts[0])
       Cannot edit post 1
