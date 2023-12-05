@@ -15,6 +15,7 @@ import debug from './debug.js'
 import { AuthorizationResponse } from './response.js'
 import { E_AUTHORIZATION_FAILURE } from './errors.js'
 import { ability as createAbility } from './ability.js'
+import { AbilitiesBuilder } from './abilities_builder.js'
 import { PolicyAuthorizer } from './policy_authorizer.js'
 import type {
   LazyImport,
@@ -22,6 +23,7 @@ import type {
   BouncerAbility,
   ResponseBuilder,
   UnWrapLazyImport,
+  BouncerAuthorizer,
   AuthorizerResponse,
   AuthorizationEmitter,
   NarrowAbilitiesForAUser,
@@ -41,6 +43,17 @@ export class Bouncer<
    */
   static responseBuilder: ResponseBuilder = (response) => {
     return typeof response === 'boolean' ? new AuthorizationResponse(response) : response
+  }
+
+  /**
+   * Define an ability using the AbilityBuilder
+   */
+  static define<Name extends string, Authorizer extends BouncerAuthorizer<any>>(
+    name: Name,
+    authorizer: Authorizer,
+    options?: { allowGuest: boolean }
+  ) {
+    return new AbilitiesBuilder({}).define(name, authorizer, options)
   }
 
   /**
@@ -340,5 +353,12 @@ export class Bouncer<
         },
       },
     }
+  }
+
+  /**
+   * Create AuthorizationResponse to deny access
+   */
+  deny(message: string, status?: number) {
+    return AuthorizationResponse.deny(message, status)
   }
 }
