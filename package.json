@@ -15,6 +15,7 @@
   "exports": {
     ".": "./build/index.js",
     "./types": "./build/src/types.js",
+    "./commands": "./build/commands/main.js",
     "./bouncer_provider": "./build/providers/bouncer_provider.js",
     "./plugins/edge": "./build/src/plugins/edge.js"
   },
@@ -26,13 +27,14 @@
     "copy:templates": "copyfiles \"stubs/**/*.stub\" --up=\"1\" build",
     "precompile": "npm run lint && npm run clean",
     "compile": "tsup-node && tsc --emitDeclarationOnly --declaration",
-    "postcompile": "npm run copy:templates",
+    "postcompile": "npm run copy:templates && npm run index:commands",
     "build": "npm run compile",
     "prepublishOnly": "npm run build",
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write .",
     "release": "np",
     "version": "npm run build",
+    "index:commands": "adonis-kit index build/commands",
     "sync-labels": "github-label-sync --labels .github/labels.json adonisjs/bouncer",
     "quick:test": "c8 node --enable-source-maps --loader=ts-node/esm bin/test.ts"
   },
@@ -61,6 +63,7 @@
     "@commitlint/config-conventional": "^18.4.3",
     "@japa/assert": "^2.0.0-2",
     "@japa/expect-type": "^2.0.0-1",
+    "@japa/file-system": "^2.0.1",
     "@japa/runner": "^3.0.0-9",
     "@japa/snapshot": "^2.0.3",
     "@swc/core": "^1.3.100",
@@ -124,6 +127,7 @@
     "entry": [
       "./index.ts",
       "./providers/bouncer_provider.ts",
+      "./commands/make_policy.ts",
       "./src/plugins/edge.ts"
     ],
     "outDir": "./build",
