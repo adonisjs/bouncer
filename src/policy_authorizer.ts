@@ -127,6 +127,41 @@ export class PolicyAuthorizer<
   }
 
   /**
+   * Executes the after hook on policy and handles various
+   * flows around using original or modified response.
+   */
+  async #executeAfterHook(
+    policy: any,
+    action: any,
+    response: boolean | AuthorizationResponse,
+    args: any[]
+  ): Promise<AuthorizationResponse> {
+    /**
+     * Return the action response when no after is defined
+     */
+    if (typeof policy.after !== 'function') {
+      return this.#responseBuilder(response)
+    }
+
+    const modifiedResponse = await policy.after(this.#user, action, response, ...args)
+    /**
+     * If modified response is a valid authorizer response, when use that
+     * modified response
+     */
+    if (
+      typeof modifiedResponse === 'boolean' ||
+      modifiedResponse instanceof AuthorizationResponse
+    ) {
+      return this.#responseBuilder(modifiedResponse)
+    }
+
+    /**
+     * Otherwise fallback to original response
+     */
+    return this.#responseBuilder(response)
+  }
+
+  /**
    * Set a container resolver to use for resolving policies
    */
   setContainerResolver(containerResolver?: ContainerResolver<any>): this {
@@ -167,17 +202,29 @@ export class PolicyAuthorizer<
     }
 
     /**
+     * Execute before hook and shortcircuit if before hook returns
+     * a valid authorizer response
+     */
+    let hookResponse: unknown
+    if (typeof policyInstance.before === 'function') {
+      hookResponse = await policyInstance.before(this.#user, action, ...args)
+    }
+    if (typeof hookResponse === 'boolean' || hookResponse instanceof AuthorizationResponse) {
+      return this.#executeAfterHook(policyInstance, action, hookResponse, args)
+    }
+
+    /**
      * Disallow action for guest users
      */
     if (this.#user === null && !this.#policyAllowsGuests(Policy, action as string)) {
-      return this.#responseBuilder(AuthorizationResponse.deny())
+      return this.#executeAfterHook(policyInstance, action, AuthorizationResponse.deny(), args)
     }
 
     /**
      * Invoke action manually and normalize its response
      */
     const response = await policyInstance[action](this.#user, ...args)
-    return this.#responseBuilder(response)
+    return this.#executeAfterHook(policyInstance, action, response, args)
   }
 
   /**
@@ -217,7 +264,7 @@ export class PolicyAuthorizer<
   /**
    * Authorize a user against a given policy action
    *
-   * @throws {E_AUTHORIZATION_FAILURE}
+   * @throws {@link E_AUTHORIZATION_FAILURE}
    */
   async authorize<Method extends GetPolicyMethods<User, InstanceType<Policy>>>(
     action: Method,

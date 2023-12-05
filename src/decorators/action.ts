@@ -19,3 +19,10 @@ export function action(options: { allowGuest: boolean }) {
     Policy.setActionMetaData(property, options)
   }
 }
+
+/**
+ * Allow guests on a policy action
+ */
+export function allowGuest() {
+  return action({ allowGuest: true })
+}

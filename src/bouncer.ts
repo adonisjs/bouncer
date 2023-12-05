@@ -269,7 +269,7 @@ export class Bouncer<
   /**
    * Authorize a user against a given ability
    *
-   * @throws {E_AUTHORIZATION_FAILURE}
+   * @throws {@link E_AUTHORIZATION_FAILURE}
    */
   authorize<Ability extends NarrowAbilitiesForAUser<User, Abilities>>(
     ability: Ability,

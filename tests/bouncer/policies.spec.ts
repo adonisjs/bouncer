@@ -13,8 +13,9 @@ import { Container } from '@adonisjs/core/container'
 
 import { Bouncer } from '../../src/bouncer.js'
 import { BasePolicy } from '../../src/base_policy.js'
-import { action } from '../../src/decorators/action.js'
+import { allowGuest } from '../../src/decorators/action.js'
 import type { AuthorizerResponse } from '../../src/types.js'
+import { AuthorizationResponse } from '../../src/response.js'
 
 test.group('Bouncer | policies | types', () => {
   test('assert with method arguments with policy reference', async () => {
@@ -666,7 +667,7 @@ test.group('Bouncer | policies', () => {
     class PostPolicy extends BasePolicy {
       resolvePermissions() {}
 
-      @action({ allowGuest: true })
+      @allowGuest()
       view(_: User | null): AuthorizerResponse {
         return true
       }
@@ -860,5 +861,221 @@ test.group('Bouncer | policies', () => {
     const postsPolicy = bouncer.with('PostPolicy')
     await assert.doesNotRejects(() => postsPolicy.authorize('view'))
     await assert.rejects(() => postsPolicy.authorize('viewAll'), 'Access denied')
+  })
+})
+
+test.group('Bouncer | policies | before hook', () => {
+  test('execute action when hook returns undefined or null', async ({ assert }) => {
+    let actionsCounter = 0
+
+    class User {
+      declare id: number
+      declare email: string
+    }
+
+    class PostPolicy extends BasePolicy {
+      before() {
+        return
+      }
+
+      view(_: User): AuthorizerResponse {
+        actionsCounter++
+        return true
+      }
+
+      viewAll(_: User): AuthorizerResponse {
+        actionsCounter++
+        return false
+      }
+    }
+
+    const bouncer = new Bouncer(new User())
+    const canView = await bouncer.with(PostPolicy).execute('view')
+    assert.isTrue(canView.authorized)
+
+    const canViewAll = await bouncer.with(PostPolicy).execute('viewAll')
+    assert.isFalse(canViewAll.authorized)
+
+    assert.equal(actionsCounter, 2)
+  })
+
+  test('deny access when before hook returns false', async ({ assert }) => {
+    let actionsCounter = 0
+
+    class User {
+      declare id: number
+      declare email: string
+    }
+
+    class PostPolicy extends BasePolicy {
+      before() {
+        return false
+      }
+
+      view(_: User): AuthorizerResponse {
+        actionsCounter++
+        return true
+      }
+
+      viewAll(_: User): AuthorizerResponse {
+        actionsCounter++
+        return false
+      }
+    }
+
+    const bouncer = new Bouncer(new User())
+    const canView = await bouncer.with(PostPolicy).execute('view')
+    assert.isFalse(canView.authorized)
+
+    const canViewAll = await bouncer.with(PostPolicy).execute('viewAll')
+    assert.isFalse(canViewAll.authorized)
+
+    assert.equal(actionsCounter, 0)
+  })
+
+  test('return custom response from before hook', async ({ assert }) => {
+    let actionsCounter = 0
+
+    class User {
+      declare id: number
+      declare email: string
+    }
+
+    class PostPolicy extends BasePolicy {
+      before() {
+        return AuthorizationResponse.deny('Post not found', 404)
+      }
+
+      view(_: User): AuthorizerResponse {
+        actionsCounter++
+        return true
+      }
+
+      viewAll(_: User): AuthorizerResponse {
+        actionsCounter++
+        return false
+      }
+    }
+
+    const bouncer = new Bouncer(new User())
+    const canView = await bouncer.with(PostPolicy).execute('view')
+    assert.isFalse(canView.authorized)
+    assert.equal(canView.message, 'Post not found')
+    assert.equal(canView.status, 404)
+
+    const canViewAll = await bouncer.with(PostPolicy).execute('viewAll')
+    assert.isFalse(canViewAll.authorized)
+    assert.equal(canViewAll.message, 'Post not found')
+    assert.equal(canViewAll.status, 404)
+
+    assert.equal(actionsCounter, 0)
+  })
+})
+
+test.group('Bouncer | policies | after hook', () => {
+  test('passthrough action response when hook returns undefined', async ({ assert }) => {
+    let actionsCounter = 0
+
+    class User {
+      declare id: number
+      declare email: string
+    }
+
+    class PostPolicy extends BasePolicy {
+      after() {
+        return
+      }
+
+      view(_: User): AuthorizerResponse {
+        actionsCounter++
+        return true
+      }
+
+      viewAll(_: User): AuthorizerResponse {
+        actionsCounter++
+        return false
+      }
+    }
+
+    const bouncer = new Bouncer(new User())
+    const canView = await bouncer.with(PostPolicy).execute('view')
+    assert.isTrue(canView.authorized)
+
+    const canViewAll = await bouncer.with(PostPolicy).execute('viewAll')
+    assert.isFalse(canViewAll.authorized)
+
+    assert.equal(actionsCounter, 2)
+  })
+
+  test('overwrite action response from after hook', async ({ assert }) => {
+    let actionsCounter = 0
+
+    class User {
+      declare id: number
+      declare email: string
+    }
+
+    class PostPolicy extends BasePolicy {
+      after() {
+        return false
+      }
+
+      view(_: User): AuthorizerResponse {
+        actionsCounter++
+        return true
+      }
+
+      viewAll(_: User): AuthorizerResponse {
+        actionsCounter++
+        return false
+      }
+    }
+
+    const bouncer = new Bouncer(new User())
+    const canView = await bouncer.with(PostPolicy).execute('view')
+    assert.isFalse(canView.authorized)
+
+    const canViewAll = await bouncer.with(PostPolicy).execute('viewAll')
+    assert.isFalse(canViewAll.authorized)
+
+    assert.equal(actionsCounter, 2)
+  })
+
+  test('overwrite before hook response from after response', async ({ assert }) => {
+    let actionsCounter = 0
+
+    class User {
+      declare id: number
+      declare email: string
+    }
+
+    class PostPolicy extends BasePolicy {
+      before() {
+        return AuthorizationResponse.deny('Post not found', 404)
+      }
+
+      after() {
+        return AuthorizationResponse.allow()
+      }
+
+      view(_: User): AuthorizerResponse {
+        actionsCounter++
+        return true
+      }
+
+      viewAll(_: User): AuthorizerResponse {
+        actionsCounter++
+        return false
+      }
+    }
+
+    const bouncer = new Bouncer(new User())
+    const canView = await bouncer.with(PostPolicy).execute('view')
+    assert.isTrue(canView.authorized)
+
+    const canViewAll = await bouncer.with(PostPolicy).execute('viewAll')
+    assert.isTrue(canViewAll.authorized)
+
+    assert.equal(actionsCounter, 0)
   })
 })
