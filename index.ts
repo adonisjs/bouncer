@@ -9,6 +9,8 @@
 
 export * as errors from './src/errors.js'
 export { Bouncer } from './src/bouncer.js'
+export { configure } from './configure.js'
+export { stubsRoot } from './stubs/main.js'
 export { BasePolicy } from './src/base_policy.js'
 export { AuthorizationResponse } from './src/response.js'
 export { action, allowGuest } from './src/decorators/action.js'
