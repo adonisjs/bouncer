@@ -73,3 +73,15 @@ export type BouncerAbility<User> = {
  * an instanceof AuthorizationResponse
  */
 export type ResponseBuilder = (response: boolean | AuthorizationResponse) => AuthorizationResponse
+
+/**
+ * Events emitted by bouncer
+ */
+export type AuthorizationEvents = {
+  'authorization:finished': {
+    user: any
+    action?: string
+    parameters: any[]
+    response: AuthorizationResponse
+  }
+}

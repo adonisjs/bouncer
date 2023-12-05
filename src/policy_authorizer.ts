@@ -7,6 +7,7 @@
  * file that was distributed with this source code.
  */
 
+import { Emitter } from '@adonisjs/core/events'
 import { RuntimeException } from '@poppinss/utils'
 import { ContainerResolver } from '@adonisjs/core/container'
 
@@ -20,6 +21,7 @@ import type {
   ResponseBuilder,
   GetPolicyMethods,
   AuthorizerResponse,
+  AuthorizationEvents,
 } from './types.js'
 
 /**
@@ -48,6 +50,11 @@ export class PolicyAuthorizer<
    * to optionally construct policy class instances
    */
   #containerResolver?: ContainerResolver<any>
+
+  /**
+   * Emitter to emit events
+   */
+  #emitter?: Emitter<AuthorizationEvents>
 
   /**
    * Response builder is used to normalize bouncer responses
@@ -127,23 +134,41 @@ export class PolicyAuthorizer<
   }
 
   /**
+   * Emits the event and sends normalized response
+   */
+  #emitAndRespond(action: any, result: boolean | AuthorizationResponse, args: any[]) {
+    const response = this.#responseBuilder(result)
+    if (this.#emitter) {
+      this.#emitter.emit('authorization:finished', {
+        user: this.#user,
+        action: `${this.#policy?.name}.${action}`,
+        response,
+        parameters: args,
+      })
+    }
+
+    return response
+  }
+
+  /**
    * Executes the after hook on policy and handles various
    * flows around using original or modified response.
    */
   async #executeAfterHook(
     policy: any,
     action: any,
-    response: boolean | AuthorizationResponse,
+    result: boolean | AuthorizationResponse,
     args: any[]
   ): Promise<AuthorizationResponse> {
     /**
      * Return the action response when no after is defined
      */
     if (typeof policy.after !== 'function') {
-      return this.#responseBuilder(response)
+      return this.#emitAndRespond(action, result, args)
     }
 
-    const modifiedResponse = await policy.after(this.#user, action, response, ...args)
+    const modifiedResponse = await policy.after(this.#user, action, result, ...args)
+
     /**
      * If modified response is a valid authorizer response, when use that
      * modified response
@@ -152,13 +177,13 @@ export class PolicyAuthorizer<
       typeof modifiedResponse === 'boolean' ||
       modifiedResponse instanceof AuthorizationResponse
     ) {
-      return this.#responseBuilder(modifiedResponse)
+      return this.#emitAndRespond(action, modifiedResponse, args)
     }
 
     /**
      * Otherwise fallback to original response
      */
-    return this.#responseBuilder(response)
+    return this.#emitAndRespond(action, result, args)
   }
 
   /**
@@ -166,6 +191,15 @@ export class PolicyAuthorizer<
    */
   setContainerResolver(containerResolver?: ContainerResolver<any>): this {
     this.#containerResolver = containerResolver
+    return this
+  }
+
+  /**
+   * Define the event emitter instance to use for emitting
+   * authorization events
+   */
+  setEmitter(emitter?: Emitter<AuthorizationEvents>): this {
+    this.#emitter = emitter
     return this
   }
 

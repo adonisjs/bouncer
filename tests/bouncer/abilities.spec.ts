@@ -9,6 +9,7 @@
 
 import { test } from '@japa/runner'
 
+import { createEmitter } from '../helpers.js'
 import { Bouncer } from '../../src/bouncer.js'
 import { AuthorizationResponse } from '../../src/response.js'
 
@@ -164,33 +165,52 @@ test.group('Bouncer | actions | types', () => {
 })
 
 test.group('Bouncer | actions', () => {
-  test('execute action by reference', async ({ assert }) => {
+  test('execute action by reference', async ({ assert }, done) => {
     class User {
       declare id: number
       declare email: string
     }
 
+    const emitter = createEmitter()
     const editPost = Bouncer.define((_: User) => false)
     const bouncer = new Bouncer(new User())
+    bouncer.setEmitter(emitter)
+
+    emitter.on('authorization:finished', (event) => {
+      assert.instanceOf(event.user, User)
+      assert.deepEqual(event.parameters, [])
+      assert.instanceOf(event.response, AuthorizationResponse)
+      done()
+    })
 
     const response = await bouncer.execute(editPost)
     assert.instanceOf(response, AuthorizationResponse)
     assert.equal(response.authorized, false)
-  })
+  }).waitForDone()
 
-  test('execute action from pre-defined list', async ({ assert }) => {
+  test('execute action from pre-defined list', async ({ assert }, done) => {
     class User {
       declare id: number
       declare email: string
     }
 
+    const emitter = createEmitter()
     const editPost = Bouncer.define((_: User) => false)
     const bouncer = new Bouncer(new User(), { editPost })
+    bouncer.setEmitter(emitter)
+
+    emitter.on('authorization:finished', (event) => {
+      assert.instanceOf(event.user, User)
+      assert.equal(event.action, 'editPost')
+      assert.deepEqual(event.parameters, [])
+      assert.instanceOf(event.response, AuthorizationResponse)
+      done()
+    })
 
     const response = await bouncer.execute('editPost')
     assert.instanceOf(response, AuthorizationResponse)
     assert.equal(response.authorized, false)
-  })
+  }).waitForDone()
 
   test('pass arguments to the action', async ({ assert }) => {
     class User {
