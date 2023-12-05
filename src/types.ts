@@ -25,7 +25,7 @@ export type LazyImport<DefaultExport> = () => Promise<{ default: DefaultExport }
 export type UnWrapLazyImport<Fn extends LazyImport<any>> = Awaited<ReturnType<Fn>>['default']
 
 /**
- * Returns a list of actions from a policy class that could be
+ * Returns a list of methods from a policy class that could be
  * used with a specific bouncer instance for a given user
  */
 export type GetPolicyMethods<User, Policy> = {
@@ -33,15 +33,15 @@ export type GetPolicyMethods<User, Policy> = {
 }[keyof Policy]
 
 /**
- * Narrowing the list of actions that can be used for
+ * Narrowing the list of abilities that can be used for
  * a specific bouncer instance for a given user
  */
-export type NarrowActionsForAUser<
+export type NarrowAbilitiesForAUser<
   User,
-  Actions extends Record<string, BouncerAction<any>> | undefined,
+  Abilities extends Record<string, BouncerAbility<any>> | undefined,
 > = {
-  [K in keyof Actions]: Actions[K] extends BouncerAction<User> ? K : never
-}[keyof Actions]
+  [K in keyof Abilities]: Abilities[K] extends BouncerAbility<User> ? K : never
+}[keyof Abilities]
 
 /**
  * A response that can be returned by an authorizer
@@ -53,17 +53,23 @@ export type AuthorizerResponse =
   | Promise<AuthorizationResponse>
 
 /**
- * The callback function that authorizes an action. It should always
+ * The callback function that authorizes an ability. It should always
  * accept the user as the first argument, followed by additional
  * arguments.
  */
 export type BouncerAuthorizer<User> = (user: User, ...args: any[]) => AuthorizerResponse
 
 /**
- * Representation of a known bouncer action
+ * Representation of a known bouncer ability
  */
-export type BouncerAction<User> = {
+export type BouncerAbility<User> = {
   allowGuest: boolean
   original: BouncerAuthorizer<User>
-  execute(user: User | null, ...args: any[]): Promise<AuthorizationResponse>
+  execute(user: User | null, ...args: any[]): AuthorizerResponse
 }
+
+/**
+ * Response builder is used to normalize response to
+ * an instanceof AuthorizationResponse
+ */
+export type ResponseBuilder = (response: boolean | AuthorizationResponse) => AuthorizationResponse

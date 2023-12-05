@@ -9,6 +9,9 @@
 
 import { defineStaticProperty } from '@poppinss/utils'
 
+/**
+ * Base policy to define custom bouncer policies
+ */
 export abstract class BasePolicy {
   static booted: boolean = false
   static actionsMetaData: Record<string, { allowGuest: boolean }> = {}

@@ -11,31 +11,41 @@ import { inspect } from 'node:util'
 import { RuntimeException } from '@poppinss/utils'
 import { type ContainerResolver } from '@adonisjs/core/container'
 
-import { action as createAction } from './action.js'
+import debug from './debug.js'
 import { AuthorizationResponse } from './response.js'
-import {
-  Constructor,
-  BouncerAction,
-  GetPolicyMethods,
-  AuthorizerResponse,
-  NarrowActionsForAUser,
+import { E_AUTHORIZATION_FAILURE } from './errors.js'
+import { ability as createAbility } from './ability.js'
+import { PolicyAuthorizer } from './policy_authorizer.js'
+import type {
   LazyImport,
+  Constructor,
+  BouncerAbility,
+  ResponseBuilder,
+  UnWrapLazyImport,
+  AuthorizerResponse,
+  NarrowAbilitiesForAUser,
 } from './types.js'
-import { BasePolicy } from './base_policy.js'
 
 /**
- * Bouncer exposes the API to evaluate bouncer actions and policies to
+ * Bouncer exposes the API to evaluate bouncer abilities and policies to
  * verify if a user is authorized to perform the given action
  */
 export class Bouncer<
   User extends Record<any, any>,
-  Actions extends Record<string, BouncerAction<any>> | undefined = undefined,
-  Policies extends Record<string, LazyImport<BasePolicy>> | undefined = undefined,
+  Abilities extends Record<string, BouncerAbility<any>> | undefined = undefined,
+  Policies extends Record<string, LazyImport<Constructor<any>>> | undefined = undefined,
 > {
   /**
-   * Define a bouncer action from a callback
+   * Response builder is used to normalize bouncer responses
    */
-  static action = createAction
+  static responseBuilder: ResponseBuilder = (response) => {
+    return typeof response === 'boolean' ? new AuthorizationResponse(response) : response
+  }
+
+  /**
+   * Define a bouncer ability from a callback
+   */
+  static define = createAbility
 
   /**
    * User resolver to lazily resolve the user
@@ -48,32 +58,29 @@ export class Bouncer<
   #user?: User | null
 
   /**
-   * Pre-defined actions
+   * Pre-defined abilities
    */
-  #actions?: Actions
+  #abilities?: Abilities
 
   /**
-   * A set of policies we already know are classes. Just
-   * to avoid the class check
+   * Pre-defined policies
    */
-  #knownPolicies: Set<Constructor<any>> = new Set()
+  #policies?: Policies
 
   /**
-   * Reference to the IoC container resolver. It is needed
-   * to optionally construct policy class instances
+   * Reference to the container resolver to construct
+   * policy classes.
    */
   #containerResolver?: ContainerResolver<any>
 
-  constructor(userOrResolver: User | (() => User | null) | null, actions?: Actions) {
+  constructor(
+    userOrResolver: User | (() => User | null) | null,
+    abilities?: Abilities,
+    policies?: Policies
+  ) {
     this.#userOrResolver = userOrResolver
-    this.#actions = actions
-  }
-
-  /**
-   * Set a container resolver to use for resolving policies
-   */
-  setContainerResolver(containerResolver: ContainerResolver<any>) {
-    this.#containerResolver = containerResolver
+    this.#abilities = abilities
+    this.#policies = policies
   }
 
   /**
@@ -92,99 +99,52 @@ export class Bouncer<
   }
 
   /**
-   * Check if the policy reference is a class constructor
+   * Returns an instance of PolicyAuthorizer. PolicyAuthorizer is
+   * used to authorize user and actions using a given policy
    */
-  #isAClass(Policy: unknown): Policy is Constructor<any> {
-    if (this.#knownPolicies.has(Policy as any)) {
-      return true
+  with<Policy extends keyof Policies>(
+    policy: Policy
+  ): Policies extends Record<string, LazyImport<Constructor<any>>>
+    ? PolicyAuthorizer<User, UnWrapLazyImport<Policies[Policy]>>
+    : never
+  with<Policy extends Constructor<any>>(policy: Policy): PolicyAuthorizer<User, Policy>
+  with<Policy extends keyof Policies & string>(policy: Policy) {
+    if (typeof policy !== 'function') {
+      /**
+       * Ensure the policy is pre-registered
+       */
+      if (!this.#policies || !this.#policies[policy]) {
+        throw new RuntimeException(`Invalid bouncer policy "${inspect(policy)}"`)
+      }
+
+      return new PolicyAuthorizer(
+        this.#getUser(),
+        this.#policies[policy],
+        Bouncer.responseBuilder
+      ).setContainerResolver(this.#containerResolver)
     }
-    return typeof Policy === 'function' && Policy.toString().startsWith('class ')
+
+    return new PolicyAuthorizer(
+      this.#getUser(),
+      policy,
+      Bouncer.responseBuilder
+    ).setContainerResolver(this.#containerResolver)
   }
 
   /**
-   * Check if a policy method allows guest users
+   * Set a container resolver to use for resolving policies
    */
-  #policyAllowsGuests(Policy: Constructor<any>, action: string): boolean {
-    if (!('actionsMetaData' in Policy)) {
-      return false
-    }
-
-    const methodMetaData = (Policy.actionsMetaData as (typeof BasePolicy)['actionsMetaData'])[
-      action
-    ]
-    if (!methodMetaData) {
-      return false
-    }
-
-    return methodMetaData.allowGuest
+  setContainerResolver(containerResolver?: ContainerResolver<any>): this {
+    this.#containerResolver = containerResolver
+    return this
   }
 
   /**
-   * Executes a policy action from the policy class constructor and a
-   * method on the class.
+   * Execute an ability by reference
    */
-  async #executePolicyAction(Policy: unknown, action: string, ...args: any[]) {
-    /**
-     * Ensure policy is a class constructor
-     */
-    if (!this.#isAClass(Policy)) {
-      throw new RuntimeException('Invalid policy reference. It must be a class constructor')
-    }
-
-    /**
-     * Create an instance of the class either using the container
-     * resolver or manually.
-     */
-    const policyInstance = this.#containerResolver
-      ? await this.#containerResolver.make(Policy)
-      : new Policy()
-
-    /**
-     * Ensure the method exists on the policy class instead
-     */
-    if (typeof policyInstance[action] !== 'function') {
-      throw new RuntimeException(`Cannot find method "${action}" on "[class ${Policy.name}]"`)
-    }
-
-    const user = this.#getUser()
-
-    /**
-     * Disallow action for guest users
-     */
-    if (user === null && !this.#policyAllowsGuests(Policy, action)) {
-      return new AuthorizationResponse(false)
-    }
-
-    /**
-     * Invoke action manually and normalize its response
-     */
-    const response = await policyInstance[action](user, ...args)
-    return typeof response === 'boolean' ? new AuthorizationResponse(response) : response
-  }
-
-  /**
-   * Execute an action from a policy class. The policy will be
-   * constructed using the AdonisJS IoC container
-   */
-  execute<
-    Policy extends Constructor<BasePolicy>,
-    Method extends GetPolicyMethods<User, InstanceType<Policy>>,
-  >(
-    action: [Policy, Method],
-    ...args: InstanceType<Policy>[Method] extends (
-      user: User,
-      ...args: infer Args
-    ) => AuthorizerResponse
-      ? Args
-      : never
-  ): Promise<AuthorizationResponse>
-
-  /**
-   * Execute an action by reference
-   */
-  execute<Action extends BouncerAction<User>>(
-    action: Action,
-    ...args: Action extends {
+  execute<Ability extends BouncerAbility<User>>(
+    ability: Ability,
+    ...args: Ability extends {
       original: (user: User, ...args: infer Args) => AuthorizerResponse
     }
       ? Args
@@ -192,69 +152,53 @@ export class Bouncer<
   ): Promise<AuthorizationResponse>
 
   /**
-   * Execute an action from the list of pre-defined actions
+   * Execute an ability from the list of pre-defined abilities
    */
-  execute<Action extends NarrowActionsForAUser<User, Actions>>(
-    action: Action,
-    ...args: Actions[Action] extends {
+  execute<Ability extends NarrowAbilitiesForAUser<User, Abilities>>(
+    ability: Ability,
+    ...args: Abilities[Ability] extends {
       original: (user: User, ...args: infer Args) => AuthorizerResponse
     }
       ? Args
       : never
   ): Promise<AuthorizationResponse>
 
-  async execute(action: any, ...args: any[]): Promise<AuthorizationResponse> {
+  async execute(ability: any, ...args: any[]): Promise<AuthorizationResponse> {
     /**
-     * Executing action from a pre-defined list of actions
+     * Executing ability from a pre-defined list of abilities
      */
-    if (this.#actions && this.#actions[action]) {
-      return this.#actions[action].execute(this.#getUser(), ...args)
+    if (this.#abilities && this.#abilities[ability]) {
+      debug('executing pre-registered ability "%s"', ability)
+      return Bouncer.responseBuilder(
+        await this.#abilities[ability].execute(this.#getUser(), ...args)
+      )
     }
 
     /**
-     * Executing policy action
+     * Ensure value is an ability reference or throw error
      */
-    if (Array.isArray(action)) {
-      return this.#executePolicyAction(action[0], action[1], ...args)
+    if (!ability || typeof ability !== 'object' || 'execute' in ability === false) {
+      throw new RuntimeException(`Invalid bouncer ability "${inspect(ability)}"`)
     }
 
     /**
-     * Ensure value is an action reference or throw error
+     * Executing ability by reference
      */
-    if (!action || typeof action !== 'object' || 'execute' in action === false) {
-      throw new RuntimeException(`Invalid bouncer action ${inspect(action)}`)
+    if (debug.enabled) {
+      debug('executing ability "%s"', ability.name)
     }
-
-    /**
-     * Executing action by reference
-     */
-    return await (action as BouncerAction<User>).execute(this.#getUser(), ...args)
+    return Bouncer.responseBuilder(
+      await (ability as BouncerAbility<User>).execute(this.#getUser(), ...args)
+    )
   }
 
   /**
-   * Check if a user is allowed to perform a policy action. The policy will be
-   * constructed using the AdonisJS IoC container
+   * Check if a user is allowed to perform an action using
+   * the ability provided by reference
    */
-  allows<
-    Policy extends Constructor<BasePolicy>,
-    Method extends GetPolicyMethods<User, InstanceType<Policy>>,
-  >(
-    action: [Policy, Method],
-    ...args: InstanceType<Policy>[Method] extends (
-      user: User,
-      ...args: infer Args
-    ) => AuthorizerResponse
-      ? Args
-      : never
-  ): Promise<boolean>
-
-  /**
-   * Check if a user is allowed to perform an action provided
-   * as a reference
-   */
-  allows<Action extends BouncerAction<User>>(
-    action: Action,
-    ...args: Action extends {
+  allows<Ability extends BouncerAbility<User>>(
+    ability: Ability,
+    ...args: Ability extends {
       original: (user: User, ...args: infer Args) => AuthorizerResponse
     }
       ? Args
@@ -262,44 +206,27 @@ export class Bouncer<
   ): Promise<boolean>
 
   /**
-   * Check if a user is allowed to perform an action
-   * from the list of pre-defined actions
+   * Check if a user is allowed to perform an action using
+   * the ability from the pre-defined list of abilities
    */
-  allows<Action extends NarrowActionsForAUser<User, Actions>>(
-    action: Action,
-    ...args: Actions[Action] extends {
+  allows<Ability extends NarrowAbilitiesForAUser<User, Abilities>>(
+    ability: Ability,
+    ...args: Abilities[Ability] extends {
       original: (user: User, ...args: infer Args) => AuthorizerResponse
     }
       ? Args
       : never
   ): Promise<boolean>
-  async allows(action: any, ...args: any[]): Promise<boolean> {
-    const response = await this.execute(action, ...args)
+  async allows(ability: any, ...args: any[]): Promise<boolean> {
+    const response = await this.execute(ability, ...args)
     return response.authorized
   }
 
   /**
-   * Check if a user is denied from performing a policy action. The policy will be
-   * constructed using the AdonisJS IoC container
+   * Check if a user is denied from performing an action using
+   * the ability provided by reference
    */
-  denies<
-    Policy extends Constructor<BasePolicy>,
-    Method extends GetPolicyMethods<User, InstanceType<Policy>>,
-  >(
-    action: [Policy, Method],
-    ...args: InstanceType<Policy>[Method] extends (
-      user: User,
-      ...args: infer Args
-    ) => AuthorizerResponse
-      ? Args
-      : never
-  ): Promise<boolean>
-
-  /**
-   * Check if a user is denied from performing an action provided
-   * as a reference
-   */
-  denies<Action extends BouncerAction<User>>(
+  denies<Action extends BouncerAbility<User>>(
     action: Action,
     ...args: Action extends {
       original: (user: User, ...args: infer Args) => AuthorizerResponse
@@ -309,12 +236,12 @@ export class Bouncer<
   ): Promise<boolean>
 
   /**
-   * Check if a user is denied from performing an action
-   * from the list of pre-defined actions
+   * Check if a user is denied from performing an action using
+   * the ability from the pre-defined list of abilities
    */
-  denies<Action extends NarrowActionsForAUser<User, Actions>>(
+  denies<Action extends NarrowAbilitiesForAUser<User, Abilities>>(
     action: Action,
-    ...args: Actions[Action] extends {
+    ...args: Abilities[Action] extends {
       original: (user: User, ...args: infer Args) => AuthorizerResponse
     }
       ? Args
@@ -323,5 +250,39 @@ export class Bouncer<
   async denies(action: any, ...args: any[]): Promise<boolean> {
     const response = await this.execute(action, ...args)
     return !response.authorized
+  }
+
+  /**
+   * Authorize a user against for a given ability
+   *
+   * @throws AuthorizationException
+   */
+  authorize<Action extends BouncerAbility<User>>(
+    action: Action,
+    ...args: Action extends {
+      original: (user: User, ...args: infer Args) => AuthorizerResponse
+    }
+      ? Args
+      : never
+  ): Promise<void>
+
+  /**
+   * Authorize a user against a given ability
+   *
+   * @throws {E_AUTHORIZATION_FAILURE}
+   */
+  authorize<Ability extends NarrowAbilitiesForAUser<User, Abilities>>(
+    ability: Ability,
+    ...args: Abilities[Ability] extends {
+      original: (user: User, ...args: infer Args) => AuthorizerResponse
+    }
+      ? Args
+      : never
+  ): Promise<void>
+  async authorize(ability: any, ...args: any[]): Promise<void> {
+    const response = await this.execute(ability, ...args)
+    if (!response.authorized) {
+      throw new E_AUTHORIZATION_FAILURE(response)
+    }
   }
 }
