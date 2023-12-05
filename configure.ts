@@ -16,6 +16,13 @@ export async function configure(command: Configure) {
   const codemods = await command.createCodemods()
 
   /**
+   * Publish stubs to define abilities and collect
+   * policies
+   */
+  await command.publishStub('abilities.stub', {})
+  await command.publishStub('policies.stub', {})
+
+  /**
    * Register provider
    */
   await codemods.updateRcFile((rcFile) => {
