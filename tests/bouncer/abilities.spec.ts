@@ -23,8 +23,8 @@ test.group('Bouncer | actions | types', () => {
       declare adminId: number
     }
 
-    const editPost = Bouncer.define((_: User) => false)
-    const editStaff = Bouncer.define((_: Admin) => false)
+    const editPost = Bouncer.ability((_: User) => false)
+    const editStaff = Bouncer.ability((_: Admin) => false)
     const bouncer = new Bouncer(new User())
     await bouncer.execute(editPost)
 
@@ -53,8 +53,8 @@ test.group('Bouncer | actions | types', () => {
       declare adminId: number
     }
 
-    const editPost = Bouncer.define((_: User) => false)
-    const editStaff = Bouncer.define((_: Admin) => false)
+    const editPost = Bouncer.ability((_: User) => false)
+    const editStaff = Bouncer.ability((_: Admin) => false)
     const bouncer = new Bouncer(new User(), { editPost, editStaff })
 
     await bouncer.execute('editPost')
@@ -80,7 +80,7 @@ test.group('Bouncer | actions | types', () => {
       declare title: string
     }
 
-    const editPost = Bouncer.define((_: User, __: Post) => {
+    const editPost = Bouncer.ability((_: User, __: Post) => {
       return false
     })
     const bouncer = new Bouncer(new User(), { editPost })
@@ -112,8 +112,8 @@ test.group('Bouncer | actions | types', () => {
       declare adminId: number
     }
 
-    const editPost = Bouncer.define((_: User | Admin) => false)
-    const editStaff = Bouncer.define((_: User | Admin) => false)
+    const editPost = Bouncer.ability((_: User | Admin) => false)
+    const editStaff = Bouncer.ability((_: User | Admin) => false)
 
     const bouncer = new Bouncer<User | Admin>(new User())
     const bouncer1 = new Bouncer(new User())
@@ -147,8 +147,8 @@ test.group('Bouncer | actions | types', () => {
       declare adminId: number
     }
 
-    const editPost = Bouncer.define((_: User | Admin) => false)
-    const editStaff = Bouncer.define((_: User | Admin) => false)
+    const editPost = Bouncer.ability((_: User | Admin) => false)
+    const editStaff = Bouncer.ability((_: User | Admin) => false)
     const actions = { editPost, editStaff }
 
     const bouncer = new Bouncer<User | Admin, typeof actions>(new User(), actions)
@@ -172,7 +172,7 @@ test.group('Bouncer | actions', () => {
     }
 
     const emitter = createEmitter()
-    const editPost = Bouncer.define((_: User) => false)
+    const editPost = Bouncer.ability((_: User) => false)
     const bouncer = new Bouncer(new User())
     Bouncer.emitter = emitter
     cleanup(() => (Bouncer.emitter = undefined))
@@ -196,7 +196,7 @@ test.group('Bouncer | actions', () => {
     }
 
     const emitter = createEmitter()
-    const editPost = Bouncer.define((_: User) => false)
+    const editPost = Bouncer.ability((_: User) => false)
     const bouncer = new Bouncer(new User(), { editPost })
     Bouncer.emitter = emitter
     cleanup(() => (Bouncer.emitter = undefined))
@@ -223,7 +223,7 @@ test.group('Bouncer | actions', () => {
       constructor(public userId: number) {}
     }
 
-    const editPost = Bouncer.define((user: User, post: Post) => {
+    const editPost = Bouncer.ability((user: User, post: Post) => {
       return post.userId === user.id
     })
 
@@ -244,7 +244,7 @@ test.group('Bouncer | actions', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define((_: User) => false)
+    const editPost = Bouncer.ability((_: User) => false)
     const bouncer = new Bouncer(new User(), { editPost })
 
     assert.isFalse(await bouncer.allows(editPost))
@@ -260,7 +260,7 @@ test.group('Bouncer | actions', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define((_: User) => {
+    const editPost = Bouncer.ability((_: User) => {
       throw new Error('Never executed to be invoked for guest users')
     })
     const actions = { editPost }
@@ -280,7 +280,7 @@ test.group('Bouncer | actions', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define(
+    const editPost = Bouncer.ability(
       (_: User | null) => {
         return true
       },
@@ -305,7 +305,7 @@ test.group('Bouncer | actions | userResolver', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define((_: User) => false)
+    const editPost = Bouncer.ability((_: User) => false)
     const bouncer = new Bouncer(() => new User())
 
     const response = await bouncer.execute(editPost)
@@ -319,7 +319,7 @@ test.group('Bouncer | actions | userResolver', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define((_: User) => false)
+    const editPost = Bouncer.ability((_: User) => false)
     const bouncer = new Bouncer(() => new User(), { editPost })
 
     const response = await bouncer.execute('editPost')
@@ -336,7 +336,7 @@ test.group('Bouncer | actions | userResolver', () => {
       constructor(public userId: number) {}
     }
 
-    const editPost = Bouncer.define((user: User, post: Post) => {
+    const editPost = Bouncer.ability((user: User, post: Post) => {
       return post.userId === user.id
     })
 
@@ -357,7 +357,7 @@ test.group('Bouncer | actions | userResolver', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define((_: User) => false)
+    const editPost = Bouncer.ability((_: User) => false)
     const bouncer = new Bouncer(() => new User(), { editPost })
 
     assert.isFalse(await bouncer.allows(editPost))
@@ -373,7 +373,7 @@ test.group('Bouncer | actions | userResolver', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define((_: User) => {
+    const editPost = Bouncer.ability((_: User) => {
       throw new Error('Never executed to be invoked for guest users')
     })
     const actions = { editPost }
@@ -393,7 +393,7 @@ test.group('Bouncer | actions | userResolver', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define(
+    const editPost = Bouncer.ability(
       (_: User | null) => {
         return true
       },
@@ -416,7 +416,7 @@ test.group('Bouncer | actions | userResolver', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define((_: User) => false)
+    const editPost = Bouncer.ability((_: User) => false)
     const bouncer = new Bouncer(() => new User())
 
     await assert.rejects(() => bouncer.authorize(editPost), 'Access denied')
@@ -428,7 +428,7 @@ test.group('Bouncer | actions | userResolver', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define((_: User) => false)
+    const editPost = Bouncer.ability((_: User) => false)
     const bouncer = new Bouncer(() => new User(), { editPost })
 
     await assert.rejects(() => bouncer.authorize('editPost'), 'Access denied')

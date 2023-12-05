@@ -93,7 +93,7 @@ test.group('Edge plugin | abilities', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define((_: User) => false)
+    const editPost = Bouncer.ability((_: User) => false)
     const bouncer = new Bouncer(new User(), { editPost })
 
     const edge = new Edge()
@@ -116,7 +116,7 @@ test.group('Edge plugin | abilities', () => {
       declare email: string
     }
 
-    const editPost = Bouncer.define((_: User) => false)
+    const editPost = Bouncer.ability((_: User) => false)
     const bouncer = new Bouncer(new User(), { editPost })
 
     const edge = new Edge()
@@ -143,7 +143,7 @@ test.group('Edge plugin | abilities', () => {
       constructor(public userId: number) {}
     }
 
-    const editPost = Bouncer.define((user: User, post: Post) => user.id === post.userId)
+    const editPost = Bouncer.ability((user: User, post: Post) => user.id === post.userId)
     const bouncer = new Bouncer(new User(1), { editPost })
 
     const edge = new Edge()
@@ -176,7 +176,7 @@ test.group('Edge plugin | abilities', () => {
       constructor(public userId: number) {}
     }
 
-    const editPost = Bouncer.define((user: User, post: Post) => user.id === post.userId)
+    const editPost = Bouncer.ability((user: User, post: Post) => user.id === post.userId)
     const bouncer = new Bouncer(new User(1), { editPost })
 
     const edge = new Edge()

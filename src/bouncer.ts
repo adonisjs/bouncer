@@ -51,7 +51,7 @@ export class Bouncer<
   /**
    * Define a bouncer ability from a callback
    */
-  static define = createAbility
+  static ability = createAbility
 
   /**
    * User resolver to lazily resolve the user
