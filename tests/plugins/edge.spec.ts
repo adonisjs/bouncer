@@ -13,7 +13,11 @@ import { Bouncer } from '../../src/bouncer.js'
 import { edgePluginBouncer } from '../../src/plugins/edge.js'
 import { BasePolicy } from '../../src/base_policy.js'
 
-test.group('Edge plugin | compile', () => {
+test.group('Edge plugin | compile', (group) => {
+  group.tap((t) =>
+    t.skip(process.platform === 'win32', 'Skipping on windows because of newline breaks')
+  )
+
   test('assert @can tag compiled output', async ({ assert }) => {
     const edge = new Edge()
     edge.use(edgePluginBouncer)
