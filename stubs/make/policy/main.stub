@@ -1,7 +1,7 @@
 {{#var policyName = generators.policyName(entity.name)}}
+{{#var policyFileName = generators.policyFileName(entity.name)}}
 {{#var modelName = generators.modelName(model.name)}}
 {{#var modelFileName = generators.modelFileName(model.name)}}
-{{#var policyFileName = generators.policyFileName(entity.name)}}
 {{#var modelImportPath = generators.importPath('#models', model.path, modelFileName.replace(/\.ts$/, ''))}}
 {{{
   exports({
