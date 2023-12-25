@@ -8,6 +8,7 @@
  */
 
 import type Configure from '@adonisjs/core/commands/configure'
+import { stubsRoot } from './stubs/main.js'
 
 /**
  * Configures the package
@@ -19,8 +20,8 @@ export async function configure(command: Configure) {
    * Publish stubs to define abilities and collect
    * policies
    */
-  await command.publishStub('abilities.stub', {})
-  await command.publishStub('policies.stub', {})
+  await codemods.makeUsingStub(stubsRoot, 'abilities.stub', {})
+  await codemods.makeUsingStub(stubsRoot, 'policies.stub', {})
 
   /**
    * Register provider
@@ -32,7 +33,7 @@ export async function configure(command: Configure) {
   /**
    * Publish and register middleware
    */
-  await command.publishStub('initialize_bouncer_middleware.stub', {
+  await codemods.makeUsingStub(stubsRoot, 'initialize_bouncer_middleware.stub', {
     entity: command.app.generators.createEntity('initialize_bouncer'),
   })
   await codemods.registerMiddleware('router', [

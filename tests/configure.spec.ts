@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 import { IgnitorFactory } from '@adonisjs/core/factories'
 import Configure from '@adonisjs/core/commands/configure'
 
-import { stubsRoot } from '../index.js'
+import { stubsRoot } from '../stubs/main.js'
 const BASE_URL = new URL('./tmp/', import.meta.url)
 
 test.group('Configure', (group) => {
