@@ -8,6 +8,9 @@
  */
 
 export class AuthorizationResponse {
+  /**
+   * Create a deny response
+   */
   static deny(message?: string, statusCode?: number) {
     const response = new AuthorizationResponse(false)
     response.message = message
@@ -15,12 +18,27 @@ export class AuthorizationResponse {
     return response
   }
 
+  /**
+   * Create an allowed response
+   */
   static allow() {
     return new AuthorizationResponse(true)
   }
 
+  /**
+   * HTTP status for the authorization response
+   */
   declare status?: number
+
+  /**
+   * Response message
+   */
   declare message?: string
+
+  /**
+   * Translation identifier to use for creating the
+   * authorization response
+   */
   declare translation?: {
     identifier: string
     data?: Record<string, any>

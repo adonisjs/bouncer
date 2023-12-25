@@ -9,6 +9,7 @@
 
 import { inspect } from 'node:util'
 import { RuntimeException } from '@poppinss/utils'
+import type { EmitterLike } from '@adonisjs/core/types/events'
 import { type ContainerResolver } from '@adonisjs/core/container'
 
 import debug from './debug.js'
@@ -20,12 +21,12 @@ import { PolicyAuthorizer } from './policy_authorizer.js'
 import type {
   LazyImport,
   Constructor,
+  BouncerEvents,
   BouncerAbility,
   ResponseBuilder,
   UnWrapLazyImport,
   BouncerAuthorizer,
   AuthorizerResponse,
-  AuthorizationEmitter,
   NarrowAbilitiesForAUser,
 } from './types.js'
 
@@ -59,7 +60,7 @@ export class Bouncer<
   /**
    * Emitter to emit events
    */
-  static emitter?: AuthorizationEmitter
+  static emitter?: EmitterLike<BouncerEvents>
 
   /**
    * Define a bouncer ability from a callback

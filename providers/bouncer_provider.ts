@@ -7,13 +7,13 @@
  * file that was distributed with this source code.
  */
 
-import { ApplicationService } from '@adonisjs/core/types'
+import type { ApplicationService } from '@adonisjs/core/types'
 
 import { Bouncer } from '../src/bouncer.js'
-import type { AuthorizationEvents } from '../src/types.js'
+import type { BouncerEvents } from '../src/types.js'
 
 declare module '@adonisjs/core/types' {
-  export interface EventsList extends AuthorizationEvents {}
+  export interface EventsList extends BouncerEvents {}
 }
 
 /**

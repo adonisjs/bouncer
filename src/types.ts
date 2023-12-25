@@ -77,19 +77,11 @@ export type ResponseBuilder = (response: boolean | AuthorizationResponse) => Aut
 /**
  * Events emitted by bouncer
  */
-export type AuthorizationEvents = {
+export type BouncerEvents = {
   'authorization:finished': {
     user: any
     action?: string
     parameters: any[]
     response: AuthorizationResponse
   }
-}
-
-/**
- * The emitter accepted by bouncer for emit authorization
- * events
- */
-export type AuthorizationEmitter = {
-  emit(key: 'authorization:finished', event: AuthorizationEvents['authorization:finished']): any
 }

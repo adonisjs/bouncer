@@ -7,7 +7,8 @@
  * file that was distributed with this source code.
  */
 import { RuntimeException } from '@poppinss/utils'
-import { ContainerResolver } from '@adonisjs/core/container'
+import type { EmitterLike } from '@adonisjs/core/types/events'
+import type { ContainerResolver } from '@adonisjs/core/container'
 
 import debug from './debug.js'
 import { BasePolicy } from './base_policy.js'
@@ -16,10 +17,10 @@ import { AuthorizationResponse } from './response.js'
 import type {
   LazyImport,
   Constructor,
+  BouncerEvents,
   ResponseBuilder,
   GetPolicyMethods,
   AuthorizerResponse,
-  AuthorizationEmitter,
 } from './types.js'
 
 /**
@@ -52,7 +53,7 @@ export class PolicyAuthorizer<
   /**
    * Emitter to emit events
    */
-  #emitter?: AuthorizationEmitter
+  #emitter?: EmitterLike<BouncerEvents>
 
   /**
    * Response builder is used to normalize bouncer responses
@@ -196,7 +197,7 @@ export class PolicyAuthorizer<
    * Define the event emitter instance to use for emitting
    * authorization events
    */
-  setEmitter(emitter?: AuthorizationEmitter): this {
+  setEmitter(emitter?: EmitterLike<BouncerEvents>): this {
     this.#emitter = emitter
     return this
   }
