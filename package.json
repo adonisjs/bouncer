@@ -126,6 +126,7 @@
   "tsup": {
     "entry": [
       "./index.ts",
+      "./src/types.ts",
       "./providers/bouncer_provider.ts",
       "./commands/make_policy.ts",
       "./src/plugins/edge.ts"
