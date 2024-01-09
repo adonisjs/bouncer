@@ -1,0 +1,22 @@
+{{#var policyName = generators.policyName(entity.name)}}
+{{#var policyFileName = generators.policyFileName(entity.name)}}
+{{#var modelName = generators.modelName(model.name)}}
+{{#var modelFileName = generators.modelFileName(model.name)}}
+{{#var modelImportPath = generators.importPath('#models', model.path, modelFileName.replace(/\.ts$/, ''))}}
+{{{
+  exports({
+    to: app.policiesPath(entity.path, policyFileName)
+  })
+}}}
+import User from '#models/user'
+import {{modelName}} from '{{modelImportPath}}'
+import { BasePolicy } from '@adonisjs/bouncer'
+import { AuthorizerResponse } from '@adonisjs/bouncer/types'
+
+export default class {{ policyName }} extends BasePolicy {
+  {{#each actions as action}}
+  {{action}}(user: User): AuthorizerResponse {
+    return false
+  }
+  {{/each}}
+}

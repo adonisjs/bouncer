@@ -1,53 +1,33 @@
-<div align="center">
-  <img src="https://res.cloudinary.com/adonisjs/image/upload/q_100/v1558612869/adonis-readme_zscycu.jpg" width="600px">
-</div>
+# @adonisjs/bouncer
 
 <br />
 
-<div align="center">
-  <h3>Bouncer</h3>
-  <p>Authorization package to authorize user actions using policies</p>
-</div>
+[![gh-workflow-image]][gh-workflow-url] [![npm-image]][npm-url] ![][typescript-image] [![license-image]][license-url]
 
-<br />
+## Introduction
+AdonisJS bouncer provides JavaScript first API to implementation authorization checks in AdonisJS applications.
 
-<div align="center">
+## Official Documentation
+The documentation is available on the [AdonisJS website](https://docs.adonisjs.com/guides/authorization)
 
-[![gh-workflow-image]][gh-workflow-url] [![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url] [![synk-image]][synk-url]
+## Contributing
+One of the primary goals of AdonisJS is to have a vibrant community of users and contributors who believes in the principles of the framework.
 
-</div>
+We encourage you to read the [contribution guide](https://github.com/adonisjs/.github/blob/main/docs/CONTRIBUTING.md) before contributing to the framework.
 
-<div align="center">
-  <h3>
-    <a href="https://adonisjs.com">
-      Website
-    </a>
-    <span> | </span>
-    <a href="https://docs.adonisjs.com/guides/authorization">
-      Guides
-    </a>
-    <span> | </span>
-    <a href="CONTRIBUTING.md">
-      Contributing
-    </a>
-  </h3>
-</div>
+## Code of Conduct
+In order to ensure that the AdonisJS community is welcoming to all, please review and abide by the [Code of Conduct](https://github.com/adonisjs/.github/blob/main/docs/CODE_OF_CONDUCT.md).
 
-<div align="center">
-  <sub>Built with ❤︎ by <a href="https://twitter.com/AmanVirk1">Harminder Virk</a>
-</div>
+## License
+AdonisJS bouncer is open-sourced software licensed under the [MIT license](LICENSE.md).
 
-[gh-workflow-image]: https://img.shields.io/github/workflow/status/adonisjs/bouncer/test?style=for-the-badge
-[gh-workflow-url]: https://github.com/adonisjs/bouncer/actions/workflows/test.yml "Github action"
+[gh-workflow-image]: https://img.shields.io/github/actions/workflow/status/adonisjs/bouncer/checks.yml?style=for-the-badge
+[gh-workflow-url]: https://github.com/adonisjs/bouncer/actions/workflows/checks.yml "Github action"
+
+[npm-image]: https://img.shields.io/npm/v/@adonisjs/bouncer/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@adonisjs/bouncer/v/latest "npm"
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
-[typescript-url]:  "typescript"
 
-[npm-image]: https://img.shields.io/npm/v/@adonisjs/bouncer.svg?style=for-the-badge&logo=npm
-[npm-url]: https://npmjs.org/package/@adonisjs/bouncer "npm"
-
-[license-image]: https://img.shields.io/npm/l/@adonisjs/bouncer?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-
-[synk-image]: https://img.shields.io/snyk/vulnerabilities/github/adonisjs/bouncer?label=Synk%20Vulnerabilities&style=for-the-badge
-[synk-url]: https://snyk.io/test/github/adonisjs/bouncer?targetFile=package.json "synk"
+[license-url]: LICENSE.md
+[license-image]: https://img.shields.io/github/license/adonisjs/bouncer?style=for-the-badge
