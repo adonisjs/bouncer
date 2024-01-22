@@ -42,7 +42,7 @@ test.group('AuthorizationException', () => {
                 async load() {
                   return {
                     en: {
-                      'access.denied': 'Access denied from translations',
+                      'errors.E_AUTHORIZATION_FAILURE': 'Access denied from translations',
                     },
                   }
                 },
@@ -74,7 +74,7 @@ test.group('AuthorizationException', () => {
                 async load() {
                   return {
                     en: {
-                      'access.denied': 'Access denied from translations',
+                      'errors.E_AUTHORIZATION_FAILURE': 'Access denied from translations',
                       'errors.not_found': 'Page not found',
                     },
                   }
@@ -116,7 +116,7 @@ test.group('AuthorizationException', () => {
 
     await exception.handle(exception, ctx)
     assert.deepEqual(ctx.response.getBody(), {
-      errors: [{ code: 'access.denied', title: 'Access denied' }],
+      errors: [{ code: 'E_AUTHORIZATION_FAILURE', title: 'Access denied' }],
     })
     assert.equal(ctx.response.getStatus(), 403)
   })

@@ -24,7 +24,7 @@ class AuthorizationException extends Exception {
   /**
    * Error identifier to lookup translation message
    */
-  identifier = 'access.denied'
+  identifier = 'errors.E_AUTHORIZATION_FAILURE'
 
   constructor(
     public response: AuthorizationResponse,
@@ -86,7 +86,7 @@ class AuthorizationException extends Exception {
         ctx.response.status(status).send({
           errors: [
             {
-              code: this.identifier,
+              code: this.code,
               title: message,
             },
           ],
