@@ -30,7 +30,7 @@ export default class {{ middlewareName }} {
      * Share bouncer helpers with Edge templates.
      */
     if ('view' in ctx) {
-      ctx.view.share(ctx.bouncer.edgeHelpers)
+      ;(ctx.view as any).share(ctx.bouncer.edgeHelpers)
     }
 
     return next()
