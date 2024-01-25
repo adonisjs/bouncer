@@ -56,6 +56,7 @@ test.group('Configure', (group) => {
       .build('policies.stub', { source: stubsRoot })
       .then((stub) => stub.prepare({}))
 
+    await assert.fileContains('adonisrc.ts', '@adonisjs/bouncer/commands')
     await assert.fileContains('adonisrc.ts', '@adonisjs/bouncer/bouncer_provider')
     await assert.fileContains('app/abilities/main.ts', abilitiesStub.contents)
     await assert.fileContains('app/policies/main.ts', policiesStub.contents)
