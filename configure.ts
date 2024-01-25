@@ -27,6 +27,7 @@ export async function configure(command: Configure) {
    * Register provider
    */
   await codemods.updateRcFile((rcFile) => {
+    rcFile.addCommand('@adonisjs/bouncer/commands')
     rcFile.addProvider('@adonisjs/bouncer/bouncer_provider')
   })
 
