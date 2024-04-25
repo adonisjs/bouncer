@@ -100,14 +100,14 @@ export class PolicyAuthorizer<
     /**
      * Prefer local reference (if exists)
      */
-    if (this.#policy) {
+    if (this.#policy && !('hot' in import.meta)) {
       return this.#policy
     }
 
     /**
-     * Read from if exists
+     * Read from cache if exists
      */
-    if (KNOWN_POLICIES_CACHE.has(this.#policyImporter)) {
+    if (KNOWN_POLICIES_CACHE.has(this.#policyImporter) && !('hot' in import.meta)) {
       debug('reading policy from the imports cache %O', this.#policyImporter)
       return KNOWN_POLICIES_CACHE.get(this.#policyImporter)!
     }
