@@ -107,7 +107,7 @@ export class PolicyAuthorizer<
     /**
      * Read from cache if exists
      */
-    if (KNOWN_POLICIES_CACHE.has(this.#policyImporter) && !('hot' in import.meta)) {
+    if (KNOWN_POLICIES_CACHE.has(this.#policyImporter)) {
       debug('reading policy from the imports cache %O', this.#policyImporter)
       return KNOWN_POLICIES_CACHE.get(this.#policyImporter)!
     }
@@ -128,7 +128,9 @@ export class PolicyAuthorizer<
     /**
      * Cache the resolved value
      */
-    KNOWN_POLICIES_CACHE.set(this.#policyImporter, this.#policy)
+    if (!('hot' in import.meta)) {
+      KNOWN_POLICIES_CACHE.set(this.#policyImporter, this.#policy)
+    }
     return this.#policy
   }
 
