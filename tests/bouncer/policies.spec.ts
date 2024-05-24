@@ -195,6 +195,50 @@ test.group('Bouncer | policies | types', () => {
     bouncer.with(StaffPolicy).execute('resolvePermissions')
   })
 
+  test('infer async policy methods', async () => {
+    class User {
+      declare id: number
+      declare email: string
+    }
+
+    class PostPolicy extends BasePolicy {
+      resolvePermissions() {}
+
+      async view(_: User) {
+        if (_) {
+          return AuthorizationResponse.deny('Denied')
+        }
+        return true
+      }
+
+      async viewAll(_: User) {
+        return false
+      }
+
+      async create(_: User) {
+        return AuthorizationResponse.deny('Denied')
+      }
+    }
+
+    const bouncer = new Bouncer(new User())
+
+    /**
+     * Both policy references should work, because we cannot infer
+     * in advance if all the methods of a given policy works
+     * with a specific user type or not.
+     */
+    await bouncer.with(PostPolicy).execute('view')
+    await bouncer.with(PostPolicy).execute('viewAll')
+    await bouncer.with(PostPolicy).execute('create')
+
+    /**
+     * The resolvePermission method does not accept the user
+     * and neither returns AuthorizerResponse
+     */
+    // @ts-expect-error
+    await bouncer.with(PostPolicy).execute('resolvePermissions')
+  })
+
   test('infer policy methods of a pre-registered policy', async () => {
     class User {
       declare id: number
@@ -267,6 +311,56 @@ test.group('Bouncer | policies | types', () => {
     bouncer.with('StaffPolicy').execute('viewAll')
     // @ts-expect-error
     bouncer.with('StaffPolicy').execute('resolvePermissions')
+  })
+
+  test('infer async policy methods of a pre-registered policy', async () => {
+    class User {
+      declare id: number
+      declare email: string
+    }
+
+    class PostPolicy extends BasePolicy {
+      resolvePermissions() {}
+
+      async view(_: User) {
+        if (_) {
+          return AuthorizationResponse.deny('Denied')
+        }
+        return true
+      }
+
+      async viewAll(_: User) {
+        return false
+      }
+
+      async create(_: User) {
+        return AuthorizationResponse.deny('Denied')
+      }
+    }
+
+    const bouncer = new Bouncer(new User(), undefined, {
+      PostPolicy: async () => {
+        return {
+          default: PostPolicy,
+        }
+      },
+    })
+
+    /**
+     * Both policy references should work, because we cannot infer
+     * in advance if all the methods of a given policy works
+     * with a specific user type or not.
+     */
+    await bouncer.with('PostPolicy').execute('view')
+    await bouncer.with('PostPolicy').execute('viewAll')
+    await bouncer.with('PostPolicy').execute('create')
+
+    /**
+     * The resolvePermission method does not accept the user
+     * and neither returns AuthorizerResponse
+     */
+    // @ts-expect-error
+    await bouncer.with('PostPolicy').execute('resolvePermissions')
   })
 
   test('infer policy method arguments', async () => {

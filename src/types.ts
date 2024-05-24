@@ -48,9 +48,8 @@ export type NarrowAbilitiesForAUser<
  */
 export type AuthorizerResponse =
   | boolean
-  | Promise<boolean>
   | AuthorizationResponse
-  | Promise<AuthorizationResponse>
+  | Promise<boolean | AuthorizationResponse>
 
 /**
  * The callback function that authorizes an ability. It should always
