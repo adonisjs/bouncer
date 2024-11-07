@@ -32,7 +32,7 @@
     "prepublishOnly": "npm run build",
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write .",
-    "release": "np",
+    "release": "release-it",
     "version": "npm run build",
     "index:commands": "adonis-kit index build/commands",
     "sync-labels": "github-label-sync --labels .github/labels.json adonisjs/bouncer",
