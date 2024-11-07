@@ -38,7 +38,10 @@
     "sync-labels": "github-label-sync --labels .github/labels.json adonisjs/bouncer",
     "quick:test": "c8 node --enable-source-maps --import=ts-node-maintained/register/esm bin/test.ts"
   },
-  "author": "virk,adonisjs",
+  "author": "Harminder Virk <virk@adonisjs.com>",
+  "contributors": [
+    "Julien Ripouteau <julien@ripouteau.com>"
+  ],
   "license": "MIT",
   "homepage": "https://github.com/adonisjs/bouncer#readme",
   "repository": {
