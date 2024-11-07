@@ -85,13 +85,17 @@
   },
   "peerDependencies": {
     "@adonisjs/core": "^6.2.0",
-    "@adonisjs/i18n": "^2.0.0"
+    "@adonisjs/i18n": "^2.0.0",
+    "edge.js": "^6.0.2"
   },
   "peerDependenciesMeta": {
     "@adonisjs/core": {
       "optional": true
     },
     "@adonisjs/i18n": {
+      "optional": true
+    },
+    "edge.js": {
       "optional": true
     }
   },
