@@ -13,11 +13,11 @@ import { AuthorizerResponse, BouncerAbility, BouncerAuthorizer } from './types.j
 type AuthorizerToAbility<Authorizer> = Authorizer extends (
   user: infer User,
   ...args: infer Args
-) => AuthorizerResponse
+) => AuthorizerResponse | Promise<AuthorizerResponse>
   ? {
       allowGuest: false
       original: Authorizer
-      execute(user: User | null, ...args: Args): AuthorizerResponse
+      execute(user: User | null, ...args: Args): AuthorizerResponse | Promise<AuthorizerResponse>
     }
   : never
 

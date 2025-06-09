@@ -46,17 +46,17 @@ export type NarrowAbilitiesForAUser<
 /**
  * A response that can be returned by an authorizer
  */
-export type AuthorizerResponse =
-  | boolean
-  | AuthorizationResponse
-  | Promise<boolean | AuthorizationResponse>
+export type AuthorizerResponse = boolean | AuthorizationResponse
 
 /**
  * The callback function that authorizes an ability. It should always
  * accept the user as the first argument, followed by additional
  * arguments.
  */
-export type BouncerAuthorizer<User> = (user: User, ...args: any[]) => AuthorizerResponse
+export type BouncerAuthorizer<User> = (
+  user: User,
+  ...args: any[]
+) => AuthorizerResponse | Promise<AuthorizerResponse>
 
 /**
  * Representation of a known bouncer ability
@@ -64,7 +64,7 @@ export type BouncerAuthorizer<User> = (user: User, ...args: any[]) => Authorizer
 export type BouncerAbility<User> = {
   allowGuest: boolean
   original: BouncerAuthorizer<User>
-  execute(user: User | null, ...args: any[]): AuthorizerResponse
+  execute(user: User | null, ...args: any[]): AuthorizerResponse | Promise<AuthorizerResponse>
 }
 
 /**

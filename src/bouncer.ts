@@ -208,7 +208,10 @@ export class Bouncer<
   execute<Ability extends BouncerAbility<User>>(
     ability: Ability,
     ...args: Ability extends {
-      original: (user: User, ...args: infer Args) => AuthorizerResponse
+      original: (
+        user: User,
+        ...args: infer Args
+      ) => AuthorizerResponse | Promise<AuthorizerResponse>
     }
       ? Args
       : never
@@ -220,7 +223,10 @@ export class Bouncer<
   execute<Ability extends NarrowAbilitiesForAUser<User, Abilities>>(
     ability: Ability,
     ...args: Abilities[Ability] extends {
-      original: (user: User, ...args: infer Args) => AuthorizerResponse
+      original: (
+        user: User,
+        ...args: infer Args
+      ) => AuthorizerResponse | Promise<AuthorizerResponse>
     }
       ? Args
       : never
@@ -267,7 +273,10 @@ export class Bouncer<
   allows<Ability extends BouncerAbility<User>>(
     ability: Ability,
     ...args: Ability extends {
-      original: (user: User, ...args: infer Args) => AuthorizerResponse
+      original: (
+        user: User,
+        ...args: infer Args
+      ) => AuthorizerResponse | Promise<AuthorizerResponse>
     }
       ? Args
       : never
@@ -280,7 +289,10 @@ export class Bouncer<
   allows<Ability extends NarrowAbilitiesForAUser<User, Abilities>>(
     ability: Ability,
     ...args: Abilities[Ability] extends {
-      original: (user: User, ...args: infer Args) => AuthorizerResponse
+      original: (
+        user: User,
+        ...args: infer Args
+      ) => AuthorizerResponse | Promise<AuthorizerResponse>
     }
       ? Args
       : never
@@ -297,7 +309,10 @@ export class Bouncer<
   denies<Action extends BouncerAbility<User>>(
     action: Action,
     ...args: Action extends {
-      original: (user: User, ...args: infer Args) => AuthorizerResponse
+      original: (
+        user: User,
+        ...args: infer Args
+      ) => AuthorizerResponse | Promise<AuthorizerResponse>
     }
       ? Args
       : never
@@ -310,7 +325,10 @@ export class Bouncer<
   denies<Action extends NarrowAbilitiesForAUser<User, Abilities>>(
     action: Action,
     ...args: Abilities[Action] extends {
-      original: (user: User, ...args: infer Args) => AuthorizerResponse
+      original: (
+        user: User,
+        ...args: infer Args
+      ) => AuthorizerResponse | Promise<AuthorizerResponse>
     }
       ? Args
       : never
@@ -328,7 +346,10 @@ export class Bouncer<
   authorize<Action extends BouncerAbility<User>>(
     action: Action,
     ...args: Action extends {
-      original: (user: User, ...args: infer Args) => AuthorizerResponse
+      original: (
+        user: User,
+        ...args: infer Args
+      ) => AuthorizerResponse | Promise<AuthorizerResponse>
     }
       ? Args
       : never
@@ -342,7 +363,10 @@ export class Bouncer<
   authorize<Ability extends NarrowAbilitiesForAUser<User, Abilities>>(
     ability: Ability,
     ...args: Abilities[Ability] extends {
-      original: (user: User, ...args: infer Args) => AuthorizerResponse
+      original: (
+        user: User,
+        ...args: infer Args
+      ) => AuthorizerResponse | Promise<AuthorizerResponse>
     }
       ? Args
       : never

@@ -212,7 +212,7 @@ export class PolicyAuthorizer<
     ...args: InstanceType<Policy>[Method] extends (
       user: User,
       ...args: infer Args
-    ) => AuthorizerResponse
+    ) => AuthorizerResponse | Promise<AuthorizerResponse>
       ? Args
       : never
   ): Promise<AuthorizationResponse> {
@@ -271,7 +271,7 @@ export class PolicyAuthorizer<
     ...args: InstanceType<Policy>[Method] extends (
       user: User,
       ...args: infer Args
-    ) => AuthorizerResponse
+    ) => AuthorizerResponse | Promise<AuthorizerResponse>
       ? Args
       : never
   ): Promise<boolean> {
@@ -288,7 +288,7 @@ export class PolicyAuthorizer<
     ...args: InstanceType<Policy>[Method] extends (
       user: User,
       ...args: infer Args
-    ) => AuthorizerResponse
+    ) => AuthorizerResponse | Promise<AuthorizerResponse>
       ? Args
       : never
   ): Promise<boolean> {
@@ -306,7 +306,7 @@ export class PolicyAuthorizer<
     ...args: InstanceType<Policy>[Method] extends (
       user: User,
       ...args: infer Args
-    ) => AuthorizerResponse
+    ) => AuthorizerResponse | Promise<AuthorizerResponse>
       ? Args
       : never
   ): Promise<void> {

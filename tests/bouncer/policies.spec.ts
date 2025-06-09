@@ -915,7 +915,7 @@ test.group('Bouncer | policies', () => {
     class PostPolicy extends BasePolicy {
       resolvePermissions() {}
 
-      view(_: User): AuthorizerResponse {
+      async view(_: User): Promise<AuthorizerResponse> {
         return true
       }
 
