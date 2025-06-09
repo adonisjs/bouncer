@@ -34,7 +34,7 @@ test.group('MakePolicy', () => {
       `import Post from '#models/post'`,
       `import User from '#models/user'`,
       `import { BasePolicy } from '@adonisjs/bouncer'`,
-      `import { AuthorizerResponse } from '@adonisjs/bouncer/types'`,
+      `import type { AuthorizerResponse } from '@adonisjs/bouncer/types'`,
       `export default class PostPolicy extends BasePolicy`,
     ])
 
@@ -100,7 +100,7 @@ test.group('MakePolicy', () => {
       `import Post from '#models/post'`,
       `import User from '#models/user'`,
       `import { BasePolicy } from '@adonisjs/bouncer'`,
-      `import { AuthorizerResponse } from '@adonisjs/bouncer/types'`,
+      `import type { AuthorizerResponse } from '@adonisjs/bouncer/types'`,
       `export default class PublishedPolicy extends BasePolicy`,
     ])
 
