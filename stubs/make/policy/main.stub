@@ -11,7 +11,7 @@
 import User from '#models/user'
 import {{modelName}} from '{{modelImportPath}}'
 import { BasePolicy } from '@adonisjs/bouncer'
-import { AuthorizerResponse } from '@adonisjs/bouncer/types'
+import type { AuthorizerResponse } from '@adonisjs/bouncer/types'
 
 export default class {{ policyName }} extends BasePolicy {
   {{#each actions as action}}

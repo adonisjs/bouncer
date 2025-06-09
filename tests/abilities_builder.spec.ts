@@ -8,7 +8,6 @@
  */
 
 import { test } from '@japa/runner'
-import { AuthorizerResponse } from '../src/types.js'
 import { Bouncer } from '../src/bouncer.js'
 
 test.group('AbilitiesBuilder', () => {
@@ -37,19 +36,19 @@ test.group('AbilitiesBuilder', () => {
         editPost: {
           allowGuest: false
           original: (user: User, post: Post) => boolean
-          execute(user: User | null, post: Post): AuthorizerResponse
+          execute(user: User | null, post: Post): boolean
         }
       } & {
         deletePost: {
           allowGuest: false
           original: (user: User, post: Post) => boolean
-          execute(user: User | null, post: Post): AuthorizerResponse
+          execute(user: User | null, post: Post): boolean
         }
       } & {
         createPost: {
           allowGuest: false
           original: () => true
-          execute(user: unknown): AuthorizerResponse
+          execute(user: unknown): true
         }
       }
     >()
