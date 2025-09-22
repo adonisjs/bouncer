@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-import type { AuthorizationResponse } from './response.js'
+import type { AuthorizationResponse } from './response.ts'
 
 /**
  * Returns a list of methods from a policy class that could be

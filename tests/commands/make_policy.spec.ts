@@ -9,7 +9,7 @@
 
 import { test } from '@japa/runner'
 import { AceFactory } from '@adonisjs/core/factories'
-import MakePolicy from '../../commands/make_policy.js'
+import MakePolicy from '../../commands/make_policy.ts'
 
 test.group('MakePolicy', () => {
   test('make policy class using the stub', async ({ assert, fs }) => {

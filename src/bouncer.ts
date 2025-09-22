@@ -17,12 +17,12 @@ import {
   type UnWrapLazyImport,
 } from '@adonisjs/core/types/common'
 
-import debug from './debug.js'
-import { AuthorizationResponse } from './response.js'
-import { E_AUTHORIZATION_FAILURE } from './errors.js'
-import { ability as createAbility } from './ability.js'
-import { AbilitiesBuilder } from './abilities_builder.js'
-import { PolicyAuthorizer } from './policy_authorizer.js'
+import debug from './debug.ts'
+import { AuthorizationResponse } from './response.ts'
+import { E_AUTHORIZATION_FAILURE } from './errors.ts'
+import { ability as createAbility } from './ability.ts'
+import { AbilitiesBuilder } from './abilities_builder.ts'
+import { PolicyAuthorizer } from './policy_authorizer.ts'
 import type {
   BouncerEvents,
   BouncerAbility,
@@ -30,7 +30,7 @@ import type {
   BouncerAuthorizer,
   AuthorizerResponse,
   NarrowAbilitiesForAUser,
-} from './types.js'
+} from './types.ts'
 
 /**
  * Bouncer exposes the API to evaluate bouncer abilities and policies to

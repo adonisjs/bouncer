@@ -8,7 +8,7 @@
  */
 
 import type { PluginFn } from 'edge.js/types'
-import debug from '../debug.js'
+import debug from '../debug.ts'
 
 /**
  * The edge plugin for Bouncer to perform authorization checks

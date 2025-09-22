@@ -11,16 +11,16 @@ import type { EmitterLike } from '@adonisjs/core/types/events'
 import type { ContainerResolver } from '@adonisjs/core/container'
 import { type Constructor, type LazyImport } from '@adonisjs/core/types/common'
 
-import debug from './debug.js'
-import { type BasePolicy } from './base_policy.js'
-import { E_AUTHORIZATION_FAILURE } from './errors.js'
-import { AuthorizationResponse } from './response.js'
+import debug from './debug.ts'
+import { type BasePolicy } from './base_policy.ts'
+import { E_AUTHORIZATION_FAILURE } from './errors.ts'
+import { AuthorizationResponse } from './response.ts'
 import type {
   BouncerEvents,
   ResponseBuilder,
   GetPolicyMethods,
   AuthorizerResponse,
-} from './types.js'
+} from './types.ts'
 
 /**
  * Map of known policies, so that we can avoid re-importing them

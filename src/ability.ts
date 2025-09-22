@@ -7,8 +7,8 @@
  * file that was distributed with this source code.
  */
 
-import { AuthorizationResponse } from './response.js'
-import { type AuthorizerResponse, type BouncerAbility, type BouncerAuthorizer } from './types.js'
+import { AuthorizationResponse } from './response.ts'
+import { type AuthorizerResponse, type BouncerAbility, type BouncerAuthorizer } from './types.ts'
 
 type AuthorizerToAbility<Authorizer> = Authorizer extends (
   user: infer User,

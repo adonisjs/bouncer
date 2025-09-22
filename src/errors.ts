@@ -10,7 +10,7 @@
 import type { I18n } from '@adonisjs/i18n'
 import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
-import type { AuthorizationResponse } from './response.js'
+import type { AuthorizationResponse } from './response.ts'
 
 /**
  * AuthorizationException is raised by bouncer when an ability or

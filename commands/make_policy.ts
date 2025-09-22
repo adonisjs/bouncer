@@ -13,7 +13,7 @@ import stringHelpers from '@adonisjs/core/helpers/string'
 import { BaseCommand, args, flags } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 
-import { stubsRoot } from '../stubs/main.js'
+import { stubsRoot } from '../stubs/main.ts'
 
 export default class MakePolicy extends BaseCommand {
   static commandName = 'make:policy'

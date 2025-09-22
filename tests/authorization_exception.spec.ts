@@ -8,8 +8,8 @@
  */
 
 import { test } from '@japa/runner'
-import { E_AUTHORIZATION_FAILURE } from '../src/errors.js'
-import { AuthorizationResponse } from '../src/response.js'
+import { E_AUTHORIZATION_FAILURE } from '../src/errors.ts'
+import { AuthorizationResponse } from '../src/response.ts'
 import { I18nManagerFactory } from '@adonisjs/i18n/factories'
 import { HttpContextFactory } from '@adonisjs/core/factories/http'
 

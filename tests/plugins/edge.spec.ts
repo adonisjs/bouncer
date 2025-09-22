@@ -9,9 +9,9 @@
 
 import { Edge } from 'edge.js'
 import { test } from '@japa/runner'
-import { Bouncer } from '../../src/bouncer.js'
-import { edgePluginBouncer } from '../../src/plugins/edge.js'
-import { BasePolicy } from '../../src/base_policy.js'
+import { Bouncer } from '../../src/bouncer.ts'
+import { edgePluginBouncer } from '../../src/plugins/edge.ts'
+import { BasePolicy } from '../../src/base_policy.ts'
 
 test.group('Edge plugin | compile', (group) => {
   group.tap((t) =>

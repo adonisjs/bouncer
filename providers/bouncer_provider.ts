@@ -9,8 +9,8 @@
 
 import type { ApplicationService } from '@adonisjs/core/types'
 
-import { Bouncer } from '../src/bouncer.js'
-import type { BouncerEvents } from '../src/types.js'
+import { Bouncer } from '../src/bouncer.ts'
+import type { BouncerEvents } from '../src/types.ts'
 
 declare module '@adonisjs/core/types' {
   export interface EventsList extends BouncerEvents {}

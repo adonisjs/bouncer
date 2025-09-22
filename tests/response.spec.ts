@@ -8,7 +8,7 @@
  */
 
 import { test } from '@japa/runner'
-import { AuthorizationResponse } from '../src/response.js'
+import { AuthorizationResponse } from '../src/response.ts'
 
 test.group('AuthorizationResponse', () => {
   test('create denied response', ({ assert }) => {

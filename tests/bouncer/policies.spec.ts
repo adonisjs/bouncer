@@ -11,12 +11,12 @@ import { test } from '@japa/runner'
 import { inject } from '@adonisjs/core'
 import { Container } from '@adonisjs/core/container'
 
-import { createEmitter } from '../helpers.js'
-import { Bouncer } from '../../src/bouncer.js'
-import { BasePolicy } from '../../src/base_policy.js'
-import { allowGuest } from '../../src/decorators/action.js'
-import type { AuthorizerResponse } from '../../src/types.js'
-import { AuthorizationResponse } from '../../src/response.js'
+import { createEmitter } from '../helpers.ts'
+import { Bouncer } from '../../src/bouncer.ts'
+import { BasePolicy } from '../../src/base_policy.ts'
+import { allowGuest } from '../../src/decorators/action.ts'
+import type { AuthorizerResponse } from '../../src/types.ts'
+import { AuthorizationResponse } from '../../src/response.ts'
 
 test.group('Bouncer | policies | types', () => {
   test('assert with method arguments with policy reference', async () => {

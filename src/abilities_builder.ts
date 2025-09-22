@@ -7,8 +7,8 @@
  * file that was distributed with this source code.
  */
 
-import { ability } from './ability.js'
-import { type AuthorizerResponse, type BouncerAbility, type BouncerAuthorizer } from './types.js'
+import { ability } from './ability.ts'
+import { type AuthorizerResponse, type BouncerAbility, type BouncerAuthorizer } from './types.ts'
 
 /**
  * Abilities builder exposes a chainable API to fluently create an object

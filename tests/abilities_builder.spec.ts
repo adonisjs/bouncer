@@ -8,7 +8,7 @@
  */
 
 import { test } from '@japa/runner'
-import { Bouncer } from '../src/bouncer.js'
+import { Bouncer } from '../src/bouncer.ts'
 
 test.group('AbilitiesBuilder', () => {
   test('define abilities using abilities builder', ({ assert, expectTypeOf }) => {

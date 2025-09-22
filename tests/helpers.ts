@@ -9,7 +9,7 @@
 
 import { Emitter } from '@adonisjs/core/events'
 import { AppFactory } from '@adonisjs/core/factories/app'
-import type { BouncerEvents } from '../src/types.js'
+import type { BouncerEvents } from '../src/types.ts'
 
 const BASE_URL = new URL('./tmp', import.meta.url)
 

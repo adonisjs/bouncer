@@ -9,9 +9,9 @@
 
 import { test } from '@japa/runner'
 
-import { createEmitter } from '../helpers.js'
-import { Bouncer } from '../../src/bouncer.js'
-import { AuthorizationResponse } from '../../src/response.js'
+import { createEmitter } from '../helpers.ts'
+import { Bouncer } from '../../src/bouncer.ts'
+import { AuthorizationResponse } from '../../src/response.ts'
 
 test.group('Bouncer | actions | types', () => {
   test('assert allowed actions by reference', async () => {
