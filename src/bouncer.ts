@@ -8,9 +8,14 @@
  */
 
 import { inspect } from 'node:util'
-import { RuntimeException } from '@poppinss/utils'
+import { RuntimeException } from '@adonisjs/core/exceptions'
 import type { EmitterLike } from '@adonisjs/core/types/events'
 import { type ContainerResolver } from '@adonisjs/core/container'
+import {
+  type Constructor,
+  type LazyImport,
+  type UnWrapLazyImport,
+} from '@adonisjs/core/types/common'
 
 import debug from './debug.js'
 import { AuthorizationResponse } from './response.js'
@@ -19,12 +24,9 @@ import { ability as createAbility } from './ability.js'
 import { AbilitiesBuilder } from './abilities_builder.js'
 import { PolicyAuthorizer } from './policy_authorizer.js'
 import type {
-  LazyImport,
-  Constructor,
   BouncerEvents,
   BouncerAbility,
   ResponseBuilder,
-  UnWrapLazyImport,
   BouncerAuthorizer,
   AuthorizerResponse,
   NarrowAbilitiesForAUser,

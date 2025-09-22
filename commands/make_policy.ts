@@ -7,9 +7,9 @@
  * file that was distributed with this source code.
  */
 
-import { slash } from '@poppinss/utils'
 import { extname, relative } from 'node:path'
 import string from '@adonisjs/core/helpers/string'
+import stringHelpers from '@adonisjs/core/helpers/string'
 import { BaseCommand, args, flags } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 
@@ -78,7 +78,7 @@ export default class MakePolicy extends BaseCommand {
      * Creative relative path for the policy file from
      * the "./app/policies" directory
      */
-    const policyRelativePath = slash(
+    const policyRelativePath = stringHelpers.toUnixSlash(
       relative(this.app.policiesPath(), destination).replace(extname(destination), '')
     )
 

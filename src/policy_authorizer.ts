@@ -6,17 +6,16 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-import { RuntimeException } from '@poppinss/utils'
+import { RuntimeException } from '@adonisjs/core/exceptions'
 import type { EmitterLike } from '@adonisjs/core/types/events'
 import type { ContainerResolver } from '@adonisjs/core/container'
+import { type Constructor, type LazyImport } from '@adonisjs/core/types/common'
 
 import debug from './debug.js'
-import { BasePolicy } from './base_policy.js'
+import { type BasePolicy } from './base_policy.js'
 import { E_AUTHORIZATION_FAILURE } from './errors.js'
 import { AuthorizationResponse } from './response.js'
 import type {
-  LazyImport,
-  Constructor,
   BouncerEvents,
   ResponseBuilder,
   GetPolicyMethods,

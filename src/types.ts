@@ -10,21 +10,6 @@
 import type { AuthorizationResponse } from './response.js'
 
 /**
- * Representation of a constructor
- */
-export type Constructor<T> = new (...args: any[]) => T
-
-/**
- * Representation of a lazy default import
- */
-export type LazyImport<DefaultExport> = () => Promise<{ default: DefaultExport }>
-
-/**
- * Helper to unwrap lazy import
- */
-export type UnWrapLazyImport<Fn extends LazyImport<any>> = Awaited<ReturnType<Fn>>['default']
-
-/**
  * Returns a list of methods from a policy class that could be
  * used with a specific bouncer instance for a given user
  */

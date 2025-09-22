@@ -8,7 +8,7 @@
  */
 
 import { ability } from './ability.js'
-import { AuthorizerResponse, BouncerAbility, BouncerAuthorizer } from './types.js'
+import { type AuthorizerResponse, type BouncerAbility, type BouncerAuthorizer } from './types.js'
 
 /**
  * Abilities builder exposes a chainable API to fluently create an object

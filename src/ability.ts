@@ -8,7 +8,7 @@
  */
 
 import { AuthorizationResponse } from './response.js'
-import { AuthorizerResponse, BouncerAbility, BouncerAuthorizer } from './types.js'
+import { type AuthorizerResponse, type BouncerAbility, type BouncerAuthorizer } from './types.js'
 
 type AuthorizerToAbility<Authorizer> = Authorizer extends (
   user: infer User,
