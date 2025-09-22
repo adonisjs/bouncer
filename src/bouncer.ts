@@ -34,7 +34,21 @@ import type {
 
 /**
  * Bouncer exposes the API to evaluate bouncer abilities and policies to
- * verify if a user is authorized to perform the given action
+ * verify if a user is authorized to perform the given action.
+ *
+ * @example
+ * ```js
+ * const bouncer = new Bouncer(user, abilities, policies)
+ *
+ * // Check ability
+ * const canEdit = await bouncer.allows('editPost', post)
+ *
+ * // Use policy
+ * const canView = await bouncer.with('PostPolicy').allows('view', post)
+ *
+ * // Authorize (throws on failure)
+ * await bouncer.authorize('deletePost', post)
+ * ```
  */
 export class Bouncer<
   User extends Record<any, any>,
@@ -50,6 +64,17 @@ export class Bouncer<
 
   /**
    * Define an ability using the AbilityBuilder
+   *
+   * @param name Unique name for the ability
+   * @param authorizer Function that determines if the action is allowed
+   * @param options Optional configuration for the ability
+   *
+   * @example
+   * ```js
+   * const abilities = Bouncer.define('editPost', (user, post) => {
+   *   return user.id === post.authorId
+   * })
+   * ```
    */
   static define<Name extends string, Authorizer extends BouncerAuthorizer<any>>(
     name: Name,
@@ -125,6 +150,13 @@ export class Bouncer<
     },
   }
 
+  /**
+   * Create a new Bouncer instance
+   *
+   * @param userOrResolver User object or function to resolve the user
+   * @param abilities Pre-defined abilities for authorization
+   * @param policies Pre-defined policies for authorization
+   */
   constructor(
     userOrResolver: User | (() => User | null) | null,
     abilities?: Abilities,
@@ -170,6 +202,14 @@ export class Bouncer<
   /**
    * Returns an instance of PolicyAuthorizer. PolicyAuthorizer is
    * used to authorize user and actions using a given policy
+   *
+   * @param policy Policy class or policy name to use for authorization
+   *
+   * @example
+   * ```js
+   * await bouncer.with('PostPolicy').allows('edit', post)
+   * await bouncer.with(PostPolicy).denies('delete', post)
+   * ```
    */
   with<Policy extends keyof Policies>(
     policy: Policy
@@ -198,6 +238,8 @@ export class Bouncer<
 
   /**
    * Set a container resolver to use for resolving policies
+   *
+   * @param containerResolver IoC container resolver for constructing policy instances
    */
   setContainerResolver(containerResolver?: ContainerResolver<any>): this {
     this.#containerResolver = containerResolver
@@ -206,6 +248,14 @@ export class Bouncer<
 
   /**
    * Execute an ability by reference
+   *
+   * @param ability Ability instance to execute
+   * @param args Arguments to pass to the ability
+   *
+   * @example
+   * ```js
+   * const result = await bouncer.execute(editPostAbility, post)
+   * ```
    */
   execute<Ability extends BouncerAbility<User>>(
     ability: Ability,
@@ -221,6 +271,14 @@ export class Bouncer<
 
   /**
    * Execute an ability from the list of pre-defined abilities
+   *
+   * @param ability Name of the pre-defined ability
+   * @param args Arguments to pass to the ability
+   *
+   * @example
+   * ```js
+   * const result = await bouncer.execute('editPost', post)
+   * ```
    */
   execute<Ability extends NarrowAbilitiesForAUser<User, Abilities>>(
     ability: Ability,
@@ -271,6 +329,14 @@ export class Bouncer<
   /**
    * Check if a user is allowed to perform an action using
    * the ability provided by reference
+   *
+   * @param ability Ability instance to check
+   * @param args Arguments to pass to the ability
+   *
+   * @example
+   * ```js
+   * const canEdit = await bouncer.allows(editPostAbility, post)
+   * ```
    */
   allows<Ability extends BouncerAbility<User>>(
     ability: Ability,
@@ -287,6 +353,14 @@ export class Bouncer<
   /**
    * Check if a user is allowed to perform an action using
    * the ability from the pre-defined list of abilities
+   *
+   * @param ability Name of the pre-defined ability
+   * @param args Arguments to pass to the ability
+   *
+   * @example
+   * ```js
+   * const canEdit = await bouncer.allows('editPost', post)
+   * ```
    */
   allows<Ability extends NarrowAbilitiesForAUser<User, Abilities>>(
     ability: Ability,
@@ -307,6 +381,14 @@ export class Bouncer<
   /**
    * Check if a user is denied from performing an action using
    * the ability provided by reference
+   *
+   * @param action Ability instance to check
+   * @param args Arguments to pass to the ability
+   *
+   * @example
+   * ```js
+   * const cannotEdit = await bouncer.denies(editPostAbility, post)
+   * ```
    */
   denies<Action extends BouncerAbility<User>>(
     action: Action,
@@ -323,6 +405,14 @@ export class Bouncer<
   /**
    * Check if a user is denied from performing an action using
    * the ability from the pre-defined list of abilities
+   *
+   * @param action Name of the pre-defined ability
+   * @param args Arguments to pass to the ability
+   *
+   * @example
+   * ```js
+   * const cannotEdit = await bouncer.denies('editPost', post)
+   * ```
    */
   denies<Action extends NarrowAbilitiesForAUser<User, Abilities>>(
     action: Action,
@@ -343,7 +433,14 @@ export class Bouncer<
   /**
    * Authorize a user against for a given ability
    *
-   * @throws AuthorizationException
+   * @param action Ability instance to authorize
+   * @param args Arguments to pass to the ability
+   * @throws E_AUTHORIZATION_FAILURE
+   *
+   * @example
+   * ```js
+   * await bouncer.authorize(editPostAbility, post)
+   * ```
    */
   authorize<Action extends BouncerAbility<User>>(
     action: Action,
@@ -360,7 +457,14 @@ export class Bouncer<
   /**
    * Authorize a user against a given ability
    *
-   * @throws {@link E_AUTHORIZATION_FAILURE}
+   * @param ability Name of the pre-defined ability
+   * @param args Arguments to pass to the ability
+   * @throws E_AUTHORIZATION_FAILURE
+   *
+   * @example
+   * ```js
+   * await bouncer.authorize('editPost', post)
+   * ```
    */
   authorize<Ability extends NarrowAbilitiesForAUser<User, Abilities>>(
     ability: Ability,
@@ -382,6 +486,14 @@ export class Bouncer<
 
   /**
    * Create AuthorizationResponse to deny access
+   *
+   * @param message Denial message
+   * @param status Optional HTTP status code
+   *
+   * @example
+   * ```js
+   * return bouncer.deny('Access denied', 403)
+   * ```
    */
   deny(message: string, status?: number) {
     return AuthorizationResponse.deny(message, status)

@@ -22,7 +22,22 @@ type AuthorizerToAbility<Authorizer> = Authorizer extends (
   : never
 
 /**
- * Helper to convert a user defined authorizer function to a bouncer ability
+ * Helper to convert a user defined authorizer function to a bouncer ability.
+ * The ability function wraps authorization logic and handles guest access control.
+ *
+ * @param options Configuration options for the ability
+ * @param authorizer Authorization function to wrap
+ *
+ * @example
+ * ```js
+ * const editPost = ability((user, post) => {
+ *   return user.id === post.authorId
+ * })
+ *
+ * const viewPost = ability({ allowGuest: true }, (user, post) => {
+ *   return post.isPublished || (user && user.id === post.authorId)
+ * })
+ * ```
  */
 export function ability<Authorizer extends BouncerAuthorizer<any>>(
   options: { allowGuest: boolean },

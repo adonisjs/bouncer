@@ -15,22 +15,51 @@ import type { CommandOptions } from '@adonisjs/core/types/ace'
 
 import { stubsRoot } from '../stubs/main.ts'
 
+/**
+ * AdonisJS Ace command for generating bouncer policy classes. This command
+ * creates new policy files with optional method stubs and automatically
+ * registers them in the policies configuration file.
+ *
+ * @example
+ * ```bash
+ * node ace make:policy PostPolicy
+ * node ace make:policy UserPolicy view edit delete --model=User
+ * node ace make:policy PostPolicy --no-register
+ * ```
+ */
 export default class MakePolicy extends BaseCommand {
+  /**
+   * Command name used to invoke this command
+   */
   static commandName = 'make:policy'
+
+  /**
+   * Human-readable description of the command
+   */
   static description = 'Make a new bouncer policy class'
+
+  /**
+   * Command configuration options
+   */
   static options: CommandOptions = {
     allowUnknownFlags: true,
   }
 
   /**
-   * The name of the policy file
+   * The name of the policy file to create
    */
   @args.string({ description: 'Name of the policy file' })
   declare name: string
 
+  /**
+   * Optional array of method names to pre-define on the policy class
+   */
   @args.spread({ description: 'Method names to pre-define on the policy', required: false })
   declare actions?: string[]
 
+  /**
+   * Whether to auto-register the policy in the app/policies/main.ts file
+   */
   @flags.boolean({
     description: 'Auto register the policy inside the app/policies/main.ts file',
     showNegatedVariantInHelp: true,
@@ -39,13 +68,25 @@ export default class MakePolicy extends BaseCommand {
   declare register?: boolean
 
   /**
-   * The model for which to generate the policy.
+   * The model name for which to generate the policy
    */
   @flags.string({ description: 'The name of the policy model' })
   declare model?: string
 
   /**
-   * Execute command
+   * Execute the make:policy command. This method handles the entire
+   * policy generation workflow including prompting for registration,
+   * creating the policy file from a stub, and optionally registering
+   * the policy in the main policies file.
+   *
+   * @example
+   * ```bash
+   * # Creates PostPolicy.ts with view, edit, delete methods
+   * node ace make:policy PostPolicy view edit delete
+   *
+   * # Creates UserPolicy.ts without auto-registration
+   * node ace make:policy UserPolicy --no-register
+   * ```
    */
   async run(): Promise<void> {
     /**

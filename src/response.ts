@@ -7,9 +7,27 @@
  * file that was distributed with this source code.
  */
 
+/**
+ * Represents the response from an authorization check, containing
+ * information about whether access was granted or denied.
+ *
+ * @example
+ * ```js
+ * const response = AuthorizationResponse.deny('Access denied', 403)
+ * response.t('errors.forbidden', { resource: 'post' })
+ * ```
+ */
 export class AuthorizationResponse {
   /**
    * Create a deny response
+   *
+   * @param message Optional message explaining why access was denied
+   * @param statusCode Optional HTTP status code for the response
+   *
+   * @example
+   * ```js
+   * AuthorizationResponse.deny('Insufficient permissions', 403)
+   * ```
    */
   static deny(message?: string, statusCode?: number) {
     const response = new AuthorizationResponse(false)
@@ -20,6 +38,11 @@ export class AuthorizationResponse {
 
   /**
    * Create an allowed response
+   *
+   * @example
+   * ```js
+   * AuthorizationResponse.allow()
+   * ```
    */
   static allow() {
     return new AuthorizationResponse(true)
@@ -44,10 +67,21 @@ export class AuthorizationResponse {
     data?: Record<string, any>
   }
 
+  /**
+   * Whether the authorization was successful
+   */
   constructor(public authorized: boolean) {}
 
   /**
    * Define the translation identifier for the authorization response
+   *
+   * @param identifier Translation key to use for internationalization
+   * @param data Optional data to pass to the translation function
+   *
+   * @example
+   * ```js
+   * response.t('errors.access_denied', { resource: 'posts' })
+   * ```
    */
   t(identifier: string, data?: Record<string, any>) {
     this.translation = { identifier, data }

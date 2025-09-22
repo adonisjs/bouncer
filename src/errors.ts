@@ -14,11 +14,28 @@ import type { AuthorizationResponse } from './response.ts'
 
 /**
  * AuthorizationException is raised by bouncer when an ability or
- * policy denies access to a user for a given resource.
+ * policy denies access to a user for a given resource. This exception
+ * provides rich error information including status codes and internationalization support.
+ *
+ * @example
+ * ```js
+ * throw new E_AUTHORIZATION_FAILURE(response)
+ * ```
  */
 class AuthorizationException extends Exception {
+  /**
+   * Default error message
+   */
   message = 'Access denied'
+
+  /**
+   * Default HTTP status code
+   */
   status = 403
+
+  /**
+   * Error code identifier
+   */
   code = 'E_AUTHORIZATION_FAILURE'
 
   /**
@@ -26,6 +43,12 @@ class AuthorizationException extends Exception {
    */
   identifier = 'errors.E_AUTHORIZATION_FAILURE'
 
+  /**
+   * Create a new AuthorizationException
+   *
+   * @param response Authorization response containing denial information
+   * @param options Optional error configuration
+   */
   constructor(
     public response: AuthorizationResponse,
     options?: ErrorOptions & {
@@ -40,6 +63,8 @@ class AuthorizationException extends Exception {
    * Returns the message to be sent in the HTTP response.
    * Feel free to override this method and return a custom
    * response.
+   *
+   * @param ctx HTTP context for accessing i18n and other services
    */
   getResponseMessage(ctx: HttpContext) {
     /**
@@ -64,6 +89,12 @@ class AuthorizationException extends Exception {
     return message
   }
 
+  /**
+   * Handle the authorization exception and send appropriate HTTP response
+   *
+   * @param _ The exception instance (not used)
+   * @param ctx HTTP context for sending the response
+   */
   async handle(_: AuthorizationException, ctx: HttpContext) {
     const status = this.response.status || this.status
     const message = this.getResponseMessage(ctx)

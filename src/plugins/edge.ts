@@ -12,7 +12,19 @@ import debug from '../debug.ts'
 
 /**
  * The edge plugin for Bouncer to perform authorization checks
- * within templates.
+ * within templates. This plugin registers @can and @cannot tags
+ * for conditional rendering based on user permissions.
+ *
+ * @example
+ * ```edge
+ * @can('editPost', post)
+ *   <button>Edit Post</button>
+ * @end
+ *
+ * @cannot('PostPolicy.delete', post)
+ *   <p>You cannot delete this post</p>
+ * @end
+ * ```
  */
 export const edgePluginBouncer: PluginFn<undefined> = (edge) => {
   debug('registering bouncer tags with edge')

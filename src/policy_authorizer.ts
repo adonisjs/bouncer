@@ -29,13 +29,29 @@ import type {
 const KNOWN_POLICIES_CACHE: Map<Function, Constructor<any>> = new Map()
 
 /**
- * Exposes the API to authorize a user using a pre-defined policy
+ * Exposes the API to authorize a user using a pre-defined policy.
+ * PolicyAuthorizer handles the execution of policy methods and manages
+ * policy lifecycle including before/after hooks.
+ *
+ * @example
+ * ```js
+ * const authorizer = new PolicyAuthorizer(user, PostPolicy, responseBuilder)
+ * const canEdit = await authorizer.allows('edit', post)
+ * await authorizer.authorize('delete', post)
+ * ```
  */
 export class PolicyAuthorizer<
   User extends Record<string, string>,
   Policy extends Constructor<any>,
 > {
+  /**
+   * Cached policy class reference
+   */
   #policy?: Policy
+
+  /**
+   * Policy importer function or direct policy class reference
+   */
   #policyImporter: LazyImport<Policy> | Policy
 
   /**
@@ -59,6 +75,13 @@ export class PolicyAuthorizer<
    */
   #responseBuilder: ResponseBuilder
 
+  /**
+   * Create a new PolicyAuthorizer instance
+   *
+   * @param user User object or null for guest
+   * @param policy Policy class or lazy import function
+   * @param responseBuilder Function to normalize authorization responses
+   */
   constructor(
     user: User | null,
     policy: LazyImport<Policy> | Policy,
@@ -71,6 +94,9 @@ export class PolicyAuthorizer<
 
   /**
    * Check if a policy method allows guest users
+   *
+   * @param Policy Policy class to check
+   * @param action Method name to check
    */
   #policyAllowsGuests(Policy: Constructor<any>, action: string): boolean {
     const actionsMetaData =
@@ -188,6 +214,8 @@ export class PolicyAuthorizer<
 
   /**
    * Set a container resolver to use for resolving policies
+   *
+   * @param containerResolver IoC container resolver for constructing policy instances
    */
   setContainerResolver(containerResolver?: ContainerResolver<any>): this {
     this.#containerResolver = containerResolver
@@ -197,6 +225,8 @@ export class PolicyAuthorizer<
   /**
    * Define the event emitter instance to use for emitting
    * authorization events
+   *
+   * @param emitter Event emitter instance
    */
   setEmitter(emitter?: EmitterLike<BouncerEvents>): this {
     this.#emitter = emitter
@@ -205,6 +235,14 @@ export class PolicyAuthorizer<
 
   /**
    * Execute an action from the list of pre-defined actions
+   *
+   * @param action Policy method name to execute
+   * @param args Arguments to pass to the policy method
+   *
+   * @example
+   * ```js
+   * const result = await authorizer.execute('edit', post)
+   * ```
    */
   async execute<Method extends GetPolicyMethods<User, InstanceType<Policy>>>(
     action: Method,
@@ -264,6 +302,14 @@ export class PolicyAuthorizer<
   /**
    * Check if a user is allowed to perform an action using
    * one of the known policy methods
+   *
+   * @param action Policy method name to check
+   * @param args Arguments to pass to the policy method
+   *
+   * @example
+   * ```js
+   * const canEdit = await authorizer.allows('edit', post)
+   * ```
    */
   async allows<Method extends GetPolicyMethods<User, InstanceType<Policy>>>(
     action: Method,
@@ -281,6 +327,14 @@ export class PolicyAuthorizer<
   /**
    * Check if a user is denied from performing an action using
    * one of the known policy methods
+   *
+   * @param action Policy method name to check
+   * @param args Arguments to pass to the policy method
+   *
+   * @example
+   * ```js
+   * const cannotEdit = await authorizer.denies('edit', post)
+   * ```
    */
   async denies<Method extends GetPolicyMethods<User, InstanceType<Policy>>>(
     action: Method,
@@ -298,7 +352,14 @@ export class PolicyAuthorizer<
   /**
    * Authorize a user against a given policy action
    *
-   * @throws {@link E_AUTHORIZATION_FAILURE}
+   * @param action Policy method name to authorize
+   * @param args Arguments to pass to the policy method
+   * @throws E_AUTHORIZATION_FAILURE
+   *
+   * @example
+   * ```js
+   * await authorizer.authorize('edit', post)
+   * ```
    */
   async authorize<Method extends GetPolicyMethods<User, InstanceType<Policy>>>(
     action: Method,
