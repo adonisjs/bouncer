@@ -108,9 +108,16 @@ class AuthorizationException extends Exception {
       case 'html':
       case null:
         if (performRedirect && 'session' in ctx) {
+          ctx.session.flashExcept([
+            '_csrf',
+            '_method',
+            'password',
+            'password_confirmation',
+            'passwordConfirmation',
+          ])
           ctx.session.flash('error', message)
           ctx.session.flashErrors({ [this.code]: message })
-          ctx.response.redirect().back()
+          ctx.response.redirect('back', true)
           return
         }
         ctx.response.status(status).send(message)
