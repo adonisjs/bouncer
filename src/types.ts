@@ -226,7 +226,7 @@ export type BouncerEvents = {
     /**
      * The name of the action or ability that was checked
      */
-    action?: string
+    action: string
 
     /**
      * Arguments passed to the authorization function

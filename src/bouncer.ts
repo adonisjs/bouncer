@@ -185,12 +185,12 @@ export class Bouncer<
   /**
    * Emits the event and sends normalized response
    */
-  #emitAndRespond(abilitiy: string, result: boolean | AuthorizationResponse, args: any[]) {
+  #emitAndRespond(ability: string, result: boolean | AuthorizationResponse, args: any[]) {
     const response = Bouncer.responseBuilder(result)
     if (Bouncer.emitter) {
       Bouncer.emitter.emit('authorization:finished', {
         user: this.#user,
-        action: abilitiy,
+        action: ability,
         response,
         parameters: args,
       })

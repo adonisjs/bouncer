@@ -6,6 +6,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 import { RuntimeException } from '@adonisjs/core/exceptions'
 import type { EmitterLike } from '@adonisjs/core/types/events'
 import type { ContainerResolver } from '@adonisjs/core/container'
@@ -113,8 +114,8 @@ export class PolicyAuthorizer<
   /**
    * Check to see if policy is defined as a class
    */
-  #isPolicyAsClass(policy: LazyImport<Policy> | Policy): policy is Policy {
-    return typeof policy === 'function' && policy.toString().startsWith('class ')
+  #isPolicyAClass(policy: LazyImport<Policy> | Policy): policy is Policy {
+    return typeof policy === 'function' && /^class(\s+|{)/.test(policy.toString())
   }
 
   /**
@@ -142,7 +143,7 @@ export class PolicyAuthorizer<
      * is provided, otherwise we consider policy to be a class
      */
     const policyOrImport = this.#policyImporter
-    if (this.#isPolicyAsClass(policyOrImport)) {
+    if (this.#isPolicyAClass(policyOrImport)) {
       this.#policy = policyOrImport
     } else {
       debug('lazily importing policy %O', this.#policyImporter)
