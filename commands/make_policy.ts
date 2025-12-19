@@ -7,9 +7,7 @@
  * file that was distributed with this source code.
  */
 
-import { extname, relative } from 'node:path'
 import string from '@adonisjs/core/helpers/string'
-import stringHelpers from '@adonisjs/core/helpers/string'
 import { BaseCommand, args, flags } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 
@@ -17,14 +15,13 @@ import { stubsRoot } from '../stubs/main.ts'
 
 /**
  * AdonisJS Ace command for generating bouncer policy classes. This command
- * creates new policy files with optional method stubs and automatically
- * registers them in the policies configuration file.
+ * creates new policy files with optional method stubs.
  *
  * @example
- * ```bash
+ * ```sh
  * node ace make:policy PostPolicy
  * node ace make:policy UserPolicy view edit delete --model=User
- * node ace make:policy PostPolicy --no-register
+ * node ace make:policy PostPolicy
  * ```
  */
 export default class MakePolicy extends BaseCommand {
@@ -58,16 +55,6 @@ export default class MakePolicy extends BaseCommand {
   declare actions?: string[]
 
   /**
-   * Whether to auto-register the policy in the app/policies/main.ts file
-   */
-  @flags.boolean({
-    description: 'Auto register the policy inside the app/policies/main.ts file',
-    showNegatedVariantInHelp: true,
-    alias: 'r',
-  })
-  declare register?: boolean
-
-  /**
    * The model name for which to generate the policy
    */
   @flags.string({ description: 'The name of the policy model' })
@@ -89,55 +76,12 @@ export default class MakePolicy extends BaseCommand {
    * ```
    */
   async run(): Promise<void> {
-    /**
-     * Display prompt to know if we should register the policy
-     * file inside the "app/policies/main.ts" file.
-     */
-    if (this.register === undefined) {
-      this.register = await this.prompt.confirm(
-        'Do you want to register the policy inside the app/policies/main.ts file?'
-      )
-    }
-
     const codemods = await this.createCodemods()
-    const { destination } = await codemods.makeUsingStub(stubsRoot, 'make/policy/main.stub', {
+    await codemods.makeUsingStub(stubsRoot, 'make/policy/main.stub', {
       flags: this.parsed.flags,
       actions: this.actions?.map((action) => string.camelCase(action)) || [],
       entity: this.app.generators.createEntity(this.name),
       model: this.app.generators.createEntity(this.model || this.name),
     })
-
-    /**
-     * Do not register when prompt has been denied or "--no-register"
-     * flag was used
-     */
-    if (!this.register) {
-      return
-    }
-
-    /**
-     * Creative relative path for the policy file from
-     * the "./app/policies" directory
-     */
-    const policyRelativePath = stringHelpers.toUnixSlash(
-      relative(this.app.policiesPath(), destination).replace(extname(destination), '')
-    )
-
-    /**
-     * Convert the policy path to pascalCase. Remember, do not take
-     * the basename in this case, because we want scoped policies
-     * to be registered with their fully qualified name.
-     */
-    const name = string.pascalCase(policyRelativePath)
-
-    /**
-     * Register policy
-     */
-    await codemods.registerPolicies([
-      {
-        name: name,
-        path: `#policies/${policyRelativePath}`,
-      },
-    ])
   }
 }

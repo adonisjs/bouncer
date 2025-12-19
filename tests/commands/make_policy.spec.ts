@@ -21,10 +21,6 @@ test.group('MakePolicy', () => {
     ace.ui.switchMode('raw')
 
     const command = await ace.create(MakePolicy, ['post'])
-    command.prompt
-      .trap('Do you want to register the policy inside the app/policies/main.ts file?')
-      .accept()
-
     await command.exec()
     command.assertSucceeded()
 
@@ -37,46 +33,6 @@ test.group('MakePolicy', () => {
       `import type { AuthorizerResponse } from '@adonisjs/bouncer/types'`,
       `export default class PostPolicy extends BasePolicy`,
     ])
-
-    await assert.fileContains(
-      'app/policies/main.ts',
-      `PostPolicy: () => import('#policies/post_policy')`
-    )
-  })
-
-  test('do not display prompt when --register flag is used', async ({ assert, fs }) => {
-    await fs.createJson('tsconfig.json', {})
-    await fs.create('app/policies/main.ts', `export const policies = {}`)
-
-    const ace = await new AceFactory().make(fs.baseUrl, { importer: () => {} })
-    await ace.app.init()
-    ace.ui.switchMode('raw')
-
-    const command = await ace.create(MakePolicy, ['post', '--register'])
-    await command.exec()
-    command.assertSucceeded()
-
-    command.assertLog('green(DONE:)    create app/policies/post_policy.ts')
-    await assert.fileContains(
-      'app/policies/main.ts',
-      `PostPolicy: () => import('#policies/post_policy')`
-    )
-  })
-
-  test('do not register policy when --no-register flag is used', async ({ assert, fs }) => {
-    await fs.createJson('tsconfig.json', {})
-    await fs.create('app/policies/main.ts', `export const policies = {}`)
-
-    const ace = await new AceFactory().make(fs.baseUrl, { importer: () => {} })
-    await ace.app.init()
-    ace.ui.switchMode('raw')
-
-    const command = await ace.create(MakePolicy, ['post', '--no-register'])
-    await command.exec()
-    command.assertSucceeded()
-
-    command.assertLog('green(DONE:)    create app/policies/post_policy.ts')
-    await assert.fileEquals('app/policies/main.ts', `export const policies = {}`)
   })
 
   test('make policy class inside nested directories', async ({ assert, fs }) => {
@@ -103,11 +59,6 @@ test.group('MakePolicy', () => {
       `import type { AuthorizerResponse } from '@adonisjs/bouncer/types'`,
       `export default class PublishedPolicy extends BasePolicy`,
     ])
-
-    await assert.fileContains(
-      'app/policies/main.ts',
-      `PostPublishedPolicy: () => import('#policies/post/published_policy')`
-    )
   })
 
   test('define policy with actions', async ({ assert, fs }) => {
