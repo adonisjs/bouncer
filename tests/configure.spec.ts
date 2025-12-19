@@ -52,14 +52,9 @@ test.group('Configure', (group) => {
       .build('abilities.stub', { source: stubsRoot })
       .then((stub) => stub.prepare({}))
 
-    const policiesStub = await stubsManager
-      .build('policies.stub', { source: stubsRoot })
-      .then((stub) => stub.prepare({}))
-
     await assert.fileContains('adonisrc.ts', '@adonisjs/bouncer/commands')
     await assert.fileContains('adonisrc.ts', '@adonisjs/bouncer/bouncer_provider')
     await assert.fileContains('app/abilities/main.ts', abilitiesStub.contents)
-    await assert.fileContains('app/policies/main.ts', policiesStub.contents)
     await assert.fileContains(
       'app/middleware/initialize_bouncer_middleware.ts',
       `export default class InitializeBouncerMiddleware {`

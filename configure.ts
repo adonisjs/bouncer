@@ -21,7 +21,6 @@ export async function configure(command: Configure) {
    * policies
    */
   await codemods.makeUsingStub(stubsRoot, 'abilities.stub', {})
-  await codemods.makeUsingStub(stubsRoot, 'policies.stub', {})
 
   /**
    * Register provider
