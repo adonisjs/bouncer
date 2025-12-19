@@ -7,6 +7,8 @@
  * file that was distributed with this source code.
  */
 
+/// <reference types="@adonisjs/session/session_middleware" />
+
 import type { I18n } from '@adonisjs/i18n'
 import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
@@ -23,6 +25,8 @@ import type { AuthorizationResponse } from './response.ts'
  * ```
  */
 class AuthorizationException extends Exception {
+  formSubmissionMethods = ['POST', 'PUT', 'PATCH', 'DELETE']
+
   /**
    * Default error message
    */
@@ -98,10 +102,17 @@ class AuthorizationException extends Exception {
   async handle(_: AuthorizationException, ctx: HttpContext) {
     const status = this.response.status || this.status
     const message = this.getResponseMessage(ctx)
+    const performRedirect = this.formSubmissionMethods.includes(ctx.request.method())
 
     switch (ctx.request.accepts(['html', 'application/vnd.api+json', 'json'])) {
       case 'html':
       case null:
+        if (performRedirect && 'session' in ctx) {
+          ctx.session.flash('error', message)
+          ctx.session.flashErrors({ [this.code]: message })
+          ctx.response.redirect().back()
+          return
+        }
         ctx.response.status(status).send(message)
         break
       case 'json':
