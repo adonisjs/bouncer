@@ -66,10 +66,10 @@
     "@poppinss/utils": "^7.0.0-next.4"
   },
   "peerDependencies": {
-    "@adonisjs/assembler": "^8.0.0-next.9",
-    "@adonisjs/core": "^7.0.0-next.1",
-    "@adonisjs/i18n": "^3.0.0-next.0",
-    "edge.js": "^6.3.0"
+    "@adonisjs/assembler": "^8.0.0-next.26",
+    "@adonisjs/core": "^7.0.0-next.16",
+    "@adonisjs/i18n": "^3.0.0-next.2",
+    "edge.js": "^6.4.0"
   },
   "peerDependenciesMeta": {
     "@adonisjs/assembler": {
