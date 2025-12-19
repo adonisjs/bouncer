@@ -322,19 +322,23 @@ test.group('Bouncer | policies | types', () => {
     class PostPolicy extends BasePolicy {
       resolvePermissions() {}
 
-      async view(_: User) {
+      async view(_: User): Promise<AuthorizationResponse | boolean> {
         if (_) {
           return AuthorizationResponse.deny('Denied')
         }
         return true
       }
 
-      async viewAll(_: User) {
+      viewAll(_: User): Promise<AuthorizationResponse> | boolean {
         return false
       }
 
-      async create(_: User) {
+      async create(_: User): Promise<AuthorizerResponse> {
         return AuthorizationResponse.deny('Denied')
+      }
+
+      delete(_: User): Promise<AuthorizerResponse> | boolean {
+        return false
       }
     }
 
@@ -354,6 +358,7 @@ test.group('Bouncer | policies | types', () => {
     await bouncer.with('PostPolicy').execute('view')
     await bouncer.with('PostPolicy').execute('viewAll')
     await bouncer.with('PostPolicy').execute('create')
+    await bouncer.with('PostPolicy').execute('delete')
 
     /**
      * The resolvePermission method does not accept the user
