@@ -34,7 +34,7 @@ test.group('Index policies', () => {
       `PostPublishedPolicy: () => import('#policies/post/published_policy')`,
     ])
     assert.isDefined(
-      cliUi.logger.getLogs().find(({ message }) => message.includes('.adonisjs/server/policies.ts'))
+      cliUi.logger.getLogs().find(({ message }) => message.includes('codegen: created 1 file(s)'))
     )
   })
 
@@ -62,7 +62,7 @@ test.group('Index policies', () => {
       `UserPolicy: () => import('#app/users/policies/user_policy')`,
     ])
     assert.isDefined(
-      cliUi.logger.getLogs().find(({ message }) => message.includes('.adonisjs/server/policies.ts'))
+      cliUi.logger.getLogs().find(({ message }) => message.includes('codegen: created 1 file(s)'))
     )
   })
 })
