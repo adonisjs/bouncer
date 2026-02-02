@@ -54,6 +54,10 @@ test.group('Configure', (group) => {
 
     await assert.fileContains('adonisrc.ts', '@adonisjs/bouncer/commands')
     await assert.fileContains('adonisrc.ts', '@adonisjs/bouncer/bouncer_provider')
+    await assert.fileContains('adonisrc.ts', [
+      `import { indexPolicies } from '@adonisjs/bouncer'`,
+      'init: [indexPolicies()]',
+    ])
     await assert.fileContains('app/abilities/main.ts', abilitiesStub.contents)
     await assert.fileContains(
       'app/middleware/initialize_bouncer_middleware.ts',

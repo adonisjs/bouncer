@@ -28,6 +28,8 @@ export async function configure(command: Configure) {
   await codemods.updateRcFile((rcFile) => {
     rcFile.addCommand('@adonisjs/bouncer/commands')
     rcFile.addProvider('@adonisjs/bouncer/bouncer_provider')
+    rcFile.addNamedImport('@adonisjs/bouncer', ['indexPolicies'])
+    rcFile.addAssemblerHook('init', 'indexPolicies()', true)
   })
 
   /**
