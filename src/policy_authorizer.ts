@@ -135,7 +135,8 @@ export class PolicyAuthorizer<
      */
     if (KNOWN_POLICIES_CACHE.has(this.#policyImporter)) {
       debug('reading policy from the imports cache %O', this.#policyImporter)
-      return KNOWN_POLICIES_CACHE.get(this.#policyImporter)!
+      this.#policy = KNOWN_POLICIES_CACHE.get(this.#policyImporter)! as Policy
+      return this.#policy
     }
 
     /**
