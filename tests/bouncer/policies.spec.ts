@@ -620,6 +620,47 @@ test.group('Bouncer | policies', () => {
     assert.isFalse(canViewAll.authorized)
   })
 
+  test('emit correct policy name in event when policy is resolved from cache', async ({
+    assert,
+    cleanup,
+  }) => {
+    class User {
+      declare id: number
+      declare email: string
+    }
+
+    class PostPolicy extends BasePolicy {
+      view(_: User): AuthorizerResponse {
+        return true
+      }
+
+      viewAll(_: User): AuthorizerResponse {
+        return false
+      }
+    }
+
+    const events: { action: string }[] = []
+    const emitter = createEmitter()
+    const bouncer = new Bouncer(new User(), undefined, {
+      PostPolicy: async () => {
+        return { default: PostPolicy }
+      },
+    })
+    Bouncer.emitter = emitter
+    cleanup(() => (Bouncer.emitter = undefined))
+
+    emitter.on('authorization:finished', (event) => {
+      events.push({ action: event.action })
+    })
+
+    await bouncer.with('PostPolicy').execute('view')
+    await bouncer.with('PostPolicy').execute('viewAll')
+
+    assert.lengthOf(events, 2)
+    assert.equal(events[0].action, 'PostPolicy.view')
+    assert.equal(events[1].action, 'PostPolicy.viewAll')
+  })
+
   test('cache lazily imported policies', async ({ assert }) => {
     let importsCounter: number = 0
 
