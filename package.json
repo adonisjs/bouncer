@@ -38,12 +38,12 @@
     "quick:test": "node --import=@poppinss/ts-exec --enable-source-maps bin/test.ts"
   },
   "devDependencies": {
-    "@adonisjs/assembler": "^8.0.0",
-    "@adonisjs/core": "^7.0.0",
-    "@adonisjs/eslint-config": "^3.0.0",
-    "@adonisjs/i18n": "^3.0.0",
-    "@adonisjs/prettier-config": "^1.4.5",
-    "@adonisjs/session": "^8.0.0",
+    "@adonisjs/assembler": "^8.5.0",
+    "@adonisjs/core": "^7.5.0",
+    "@adonisjs/eslint-config": "^3.1.0",
+    "@adonisjs/i18n": "^3.0.1",
+    "@adonisjs/prettier-config": "^1.5.0",
+    "@adonisjs/session": "^8.1.0",
     "@adonisjs/tsconfig": "^2.0.0",
     "@japa/assert": "^4.2.0",
     "@japa/expect-type": "^2.0.4",
@@ -51,20 +51,20 @@
     "@japa/runner": "^5.3.0",
     "@japa/snapshot": "^2.0.10",
     "@poppinss/ts-exec": "^1.4.4",
-    "@release-it/conventional-changelog": "^10.0.5",
-    "c8": "^11.0.0",
+    "@release-it/conventional-changelog": "^12.0.0",
+    "c8": "^12.0.0",
     "copyfiles": "^2.4.1",
     "cross-env": "^10.1.0",
     "del-cli": "^7.0.0",
-    "edge.js": "^6.5.0",
-    "eslint": "^10.0.2",
+    "edge.js": "^6.5.1",
+    "eslint": "^10.8.1",
     "reflect-metadata": "^0.2.2",
-    "release-it": "^19.2.4",
-    "tsdown": "^0.20.3",
+    "release-it": "^21.0.2",
+    "tsdown": "^0.22.14",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@poppinss/utils": "^7.0.0"
+    "@poppinss/utils": "^7.0.1"
   },
   "peerDependencies": {
     "@adonisjs/assembler": "^8.0.0-next.26 || ^8.0.0",
