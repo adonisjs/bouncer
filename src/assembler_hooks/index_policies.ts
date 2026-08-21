@@ -17,7 +17,7 @@ export function indexPolicies(config?: {
   importAlias?: string
   /** Glob patterns for matching policies files */
   glob?: string[]
-}) {
+}): Extract<CommonHooks['init'][number], { run: any }> {
   const policies = Object.assign(
     {
       source: 'app/policies',
@@ -73,5 +73,5 @@ export function indexPolicies(config?: {
         },
       })
     },
-  } satisfies CommonHooks['init'][number]
+  }
 }
